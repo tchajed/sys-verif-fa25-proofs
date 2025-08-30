@@ -1,0 +1,26 @@
+#!/bin/bash
+
+set -eu
+
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+
+# run from repo root
+cd "$DIR/.."
+
+name="hw"
+
+# shellcheck disable=SC2046
+env COPYFILE_DISABLE=1 tar --no-xattrs -cf "$name.tar" \
+    $(find src -name "*.v") \
+    _CoqProject Makefile \
+    $(find go -name "*.go")
+
+if [ -e perennial/.git ]; then
+    # record the perennial submodule commit hash
+    (cd perennial && git rev-parse HEAD) > perennial-commit
+    env COPYFILE_DISABLE=1 tar --no-xattrs -rf "$name.tar" perennial-commit
+    rm perennial-commit
+fi
+rm -f "$name.tar.gz"
+gzip "$name.tar"
+echo "created $name.tar.gz"
