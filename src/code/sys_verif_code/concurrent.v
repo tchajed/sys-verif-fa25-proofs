@@ -316,7 +316,7 @@ Definition msets' : list (go_string * (list (go_string * val))) := [(AtomicInt.i
     pkg_vars := vars';
     pkg_functions := functions';
     pkg_msets := msets';
-    pkg_imported_pkgs := [sync.sync; sys_verif_code.concurrent.barrier.barrier; github_com.goose_lang.std.std];
+    pkg_imported_pkgs := [code.sync.sync; code.sys_verif_code.concurrent.barrier.barrier; code.github_com.goose_lang.std.std];
   |}.
 
 Definition initialize' : val :=

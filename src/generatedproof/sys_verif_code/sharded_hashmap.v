@@ -341,7 +341,7 @@ Global Instance is_pkg_defined_pure_sharded_hashmap : IsPkgDefinedPure sharded_h
   {|
     is_pkg_defined_pure_def go_ctx :=
       is_pkg_defined_pure_single sharded_hashmap ∧
-      is_pkg_defined_pure sync.sync;
+      is_pkg_defined_pure code.sync.sync;
   |}.
 
 #[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
@@ -349,7 +349,7 @@ Global Program Instance is_pkg_defined_sharded_hashmap : IsPkgDefined sharded_ha
   {|
     is_pkg_defined_def go_ctx :=
       (is_pkg_defined_single sharded_hashmap ∗
-       is_pkg_defined sync.sync)%I
+       is_pkg_defined code.sync.sync)%I
   |}.
 Final Obligation. iIntros. iFrame "#%". Qed.
 #[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.

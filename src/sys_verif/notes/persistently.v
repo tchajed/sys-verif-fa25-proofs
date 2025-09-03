@@ -1,4 +1,4 @@
-(*| # Lecture 15: The persistently modality
+(*| # The persistently modality
 
 > Follow these notes in Rocq at [src/sys_verif/notes/persistently.v](https://github.com/tchajed/sys-verif-fa25-proofs/blob/main/src/sys_verif/notes/persistently.v).
 
@@ -432,16 +432,17 @@ The rest of this proof is general loop and slice reasoning and not related to th
     wp_if_destruct; try wp_auto.
     - wp_pure.
       { word. }
-      list_elem [x1; x2; x3] i as x_i.
-      wp_apply (wp_load_slice_elem with "[$Hs]") as "_"; [ by eauto | ].
+      list_elem [x1; x2; x3] (sint.Z i) as x_i.
+      wp_apply (wp_load_slice_elem with "[$Hs]") as "_"; [ word | by eauto | ].
       wp_for_post.
       iFrame.
       iSplit.
       { iPureIntro. word. }
       replace (uint.nat (word.add i (W64 1))) with (S (uint.nat i)) by word.
-      erewrite take_S_r; eauto.
-      rewrite list_w64_sum_app1.
-      iFrame "sum".
+      erewrite take_S_r.
+      { rewrite list_w64_sum_app1.
+        iFrame "sum". }
+      replace (uint.nat i) with (sint.nat i) by word; auto.
     - (*| The little proof pattern below of using `iExactEq` is sometimes useful - it allows you to use any `"H": P` to prove `Q` if you can prove `P = Q`. This often has to be paired with `repeat f_equal` since you'll otherwise have `#(...) = #(...)` and you generally want to get rid of the `#` function in front of both sides. |*)
       iDestruct ("HΦ" with "[]") as "HΦ".
       { done. }

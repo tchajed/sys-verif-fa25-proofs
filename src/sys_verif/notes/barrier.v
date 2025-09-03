@@ -1,4 +1,4 @@
-(*| # Lecture 21 and 22: Specification and Proof of a Concurrent Barrier
+(*| # Specification and Proof of a Concurrent Barrier
 
 > Follow these notes in Rocq at [src/sys_verif/notes/barrier.v](https://github.com/tchajed/sys-verif-fa25-proofs/blob/main/src/sys_verif/notes/barrier.v).
 

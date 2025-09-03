@@ -1,4 +1,4 @@
-(*| # Lecture 2: Introduction to Rocq
+(*| # Introduction to Rocq
 
 > Follow these notes in Rocq at [src/sys_verif/notes/rocq_intro.v](https://github.com/tchajed/sys-verif-fa25-proofs/blob/main/src/sys_verif/notes/rocq_intro.v).
 

@@ -100,7 +100,7 @@ Definition msets' : list (go_string * (list (go_string * val))) := [(Barrier.id,
     pkg_vars := vars';
     pkg_functions := functions';
     pkg_msets := msets';
-    pkg_imported_pkgs := [sync.sync; github_com.goose_lang.std.std];
+    pkg_imported_pkgs := [code.sync.sync; code.github_com.goose_lang.std.std];
   |}.
 
 Definition initialize' : val :=

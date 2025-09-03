@@ -1,4 +1,4 @@
-(*| # Lecture 17: Lock invariants
+(*| # Lock invariants
 
 > Follow these notes in Rocq at [src/sys_verif/notes/invariants.v](https://github.com/tchajed/sys-verif-fa25-proofs/blob/main/src/sys_verif/notes/invariants.v).
 

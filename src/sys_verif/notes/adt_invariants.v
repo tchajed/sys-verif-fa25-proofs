@@ -2,7 +2,7 @@ From sys_verif Require Import options.
 From stdpp Require Import numbers fin_sets gmap.
 #[local] Open Scope Z_scope.
 
-(*| ## Lecture 5: ADT specification with invariants
+(*| ## ADT specification with invariants
 
 > Follow these notes in Rocq at [src/sys_verif/notes/adt_invariants.v](https://github.com/tchajed/sys-verif-fa25-proofs/blob/main/src/sys_verif/notes/adt_invariants.v).
 

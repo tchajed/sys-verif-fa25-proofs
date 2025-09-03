@@ -209,7 +209,7 @@ Definition msets' : list (go_string * (list (go_string * val))) := [].
     pkg_vars := vars';
     pkg_functions := functions';
     pkg_msets := msets';
-    pkg_imported_pkgs := [github_com.goose_lang.std.std];
+    pkg_imported_pkgs := [code.github_com.goose_lang.std.std];
   |}.
 
 Definition initialize' : val :=

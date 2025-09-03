@@ -6,9 +6,9 @@ package heap
 //
 // If needle appears multiple times in s, no guarantees are made about which of
 // those indices is returned.
-func BinarySearch(s []uint64, needle uint64) (uint64, bool) {
-	var i = uint64(0)
-	var j = uint64(len(s))
+func BinarySearch(s []uint64, needle uint64) (int, bool) {
+	var i = 0
+	var j = len(s)
 	for i < j {
 		mid := i + (j-i)/2
 		if s[mid] < needle {
@@ -17,7 +17,7 @@ func BinarySearch(s []uint64, needle uint64) (uint64, bool) {
 			j = mid
 		}
 	}
-	if i < uint64(len(s)) {
+	if i < len(s) {
 		return i, s[i] == needle
 	}
 	return i, false

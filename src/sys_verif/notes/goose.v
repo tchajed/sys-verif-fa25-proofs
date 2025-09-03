@@ -1,4 +1,4 @@
-(*| # Lecture 11: Goose - Modeling and reasoning about Go
+(*| # Goose - Modeling and reasoning about Go
 
 > Follow these notes in Rocq at [src/sys_verif/notes/goose.v](https://github.com/tchajed/sys-verif-fa25-proofs/blob/main/src/sys_verif/notes/goose.v).
 

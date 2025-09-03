@@ -952,17 +952,19 @@ Proof.
   wp_apply wp_bucketIdx.
   { iPureIntro. word. }
   iIntros (idx Hidx).
-  list_elem b_ls (uint.nat idx) as bi_l.
+  list_elem b_ls (sint.nat idx) as bi_l.
   wp_auto.
   wp_pure.
   { word. }
   wp_apply (wp_load_slice_elem with "[$Hb_ls]").
+  { word. }
   { eauto. }
   iIntros "_".
   wp_auto.
-  iDestruct (big_sepL_lookup _ _ (uint.nat idx) with "His_buckets") as "Hidx".
+  iDestruct (big_sepL_lookup _ _ (sint.nat idx) with "His_buckets") as "Hidx".
   { eauto. }
-  replace (Z.of_nat (uint.nat idx)) with (uint.Z idx) by word.
+  replace (Z.of_nat (sint.nat idx)) with (sint.Z idx) by word.
+  replace (uint.Z idx) with (sint.Z idx) in Hidx by word.
   iNamed "Hidx".
   wp_auto.
   wp_apply (wp_Mutex__Lock with "[$Hlock]").

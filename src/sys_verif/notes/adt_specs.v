@@ -2,7 +2,7 @@ From sys_verif Require Import options.
 From stdpp Require Import numbers fin_sets gmap.
 #[local] Open Scope Z_scope.
 
-(*| # Lecture 4: Model-based specifications for functional programs
+(*| # Model-based specifications for functional programs
 
 > Follow these notes in Rocq at [src/sys_verif/notes/adt_specs.v](https://github.com/tchajed/sys-verif-fa25-proofs/blob/main/src/sys_verif/notes/adt_specs.v).
 

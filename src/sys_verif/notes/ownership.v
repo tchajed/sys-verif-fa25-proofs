@@ -1,6 +1,6 @@
-(*| # Lecture 13: Goose - Ownership reasoning
+(*| # Goose - Ownership reasoning
 
-> Follow these notes in Rocq at [src/sys_verif/notes/ownership.v](https://github.com/tchajed/sys-verif-fa25-proofs/blob/main/src/sys_verif/notes/ownership.v).
+> Follow these notes in Coq at [src/sys_verif/notes/ownership.v](https://github.com/tchajed/sys-verif-fa25-proofs/blob/main/src/sys_verif/notes/ownership.v).
 
 ## Learning outcomes
 

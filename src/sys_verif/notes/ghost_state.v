@@ -1,4 +1,4 @@
-(*| # Lecture 19: Ghost state
+(*| # Ghost state
 
 > Follow these notes in Rocq at [src/sys_verif/notes/ghost_state.v](https://github.com/tchajed/sys-verif-fa25-proofs/blob/main/src/sys_verif/notes/ghost_state.v).
 

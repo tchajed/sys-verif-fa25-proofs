@@ -7,16 +7,11 @@ type SearchTree struct {
 }
 
 func NewSearchTree() *SearchTree {
-	// NOTE: this pattern works around a Goose bug with translating the nil
-	// constant
-	var s *SearchTree
-	return s
+	return nil
 }
 
 func singletonTree(key uint64) *SearchTree {
-	// NOTE: same workaround for Goose bug
-	var s *SearchTree
-	return &SearchTree{key: key, left: s, right: s}
+	return &SearchTree{key: key, left: nil, right: nil}
 }
 
 func (t *SearchTree) Insert(key uint64) *SearchTree {

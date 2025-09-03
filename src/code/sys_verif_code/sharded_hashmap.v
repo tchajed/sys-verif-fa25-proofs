@@ -305,7 +305,7 @@ Definition msets' : list (go_string * (list (go_string * val))) := [(entry.id, [
     pkg_vars := vars';
     pkg_functions := functions';
     pkg_msets := msets';
-    pkg_imported_pkgs := [sync.sync];
+    pkg_imported_pkgs := [code.sync.sync];
   |}.
 
 Definition initialize' : val :=

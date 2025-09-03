@@ -31,29 +31,29 @@ Definition BinarySearchⁱᵐᵖˡ : val :=
   λ: "s" "needle",
     exception_do (let: "needle" := (mem.alloc "needle") in
     let: "s" := (mem.alloc "s") in
-    let: "i" := (mem.alloc (type.zero_val #uint64T)) in
+    let: "i" := (mem.alloc (type.zero_val #intT)) in
     let: "$r0" := #(W64 0) in
-    do:  ("i" <-[#uint64T] "$r0");;;
-    let: "j" := (mem.alloc (type.zero_val #uint64T)) in
-    let: "$r0" := (s_to_w64 (let: "$a0" := (![#sliceT] "s") in
-    slice.len "$a0")) in
-    do:  ("j" <-[#uint64T] "$r0");;;
-    (for: (λ: <>, (![#uint64T] "i") < (![#uint64T] "j")); (λ: <>, #()) := λ: <>,
-      let: "mid" := (mem.alloc (type.zero_val #uint64T)) in
-      let: "$r0" := ((![#uint64T] "i") + (((![#uint64T] "j") - (![#uint64T] "i")) `quot` #(W64 2))) in
-      do:  ("mid" <-[#uint64T] "$r0");;;
-      (if: (![#uint64T] (slice.elem_ref #uint64T (![#sliceT] "s") (![#uint64T] "mid"))) < (![#uint64T] "needle")
+    do:  ("i" <-[#intT] "$r0");;;
+    let: "j" := (mem.alloc (type.zero_val #intT)) in
+    let: "$r0" := (let: "$a0" := (![#sliceT] "s") in
+    slice.len "$a0") in
+    do:  ("j" <-[#intT] "$r0");;;
+    (for: (λ: <>, int_lt (![#intT] "i") (![#intT] "j")); (λ: <>, #()) := λ: <>,
+      let: "mid" := (mem.alloc (type.zero_val #intT)) in
+      let: "$r0" := ((![#intT] "i") + (((![#intT] "j") - (![#intT] "i")) `quots` #(W64 2))) in
+      do:  ("mid" <-[#intT] "$r0");;;
+      (if: (![#uint64T] (slice.elem_ref #uint64T (![#sliceT] "s") (![#intT] "mid"))) < (![#uint64T] "needle")
       then
-        let: "$r0" := ((![#uint64T] "mid") + #(W64 1)) in
-        do:  ("i" <-[#uint64T] "$r0")
+        let: "$r0" := ((![#intT] "mid") + #(W64 1)) in
+        do:  ("i" <-[#intT] "$r0")
       else
-        let: "$r0" := (![#uint64T] "mid") in
-        do:  ("j" <-[#uint64T] "$r0")));;;
-    (if: (![#uint64T] "i") < (s_to_w64 (let: "$a0" := (![#sliceT] "s") in
-    slice.len "$a0"))
-    then return: (![#uint64T] "i", (![#uint64T] (slice.elem_ref #uint64T (![#sliceT] "s") (![#uint64T] "i"))) = (![#uint64T] "needle"))
+        let: "$r0" := (![#intT] "mid") in
+        do:  ("j" <-[#intT] "$r0")));;;
+    (if: int_lt (![#intT] "i") (let: "$a0" := (![#sliceT] "s") in
+    slice.len "$a0")
+    then return: (![#intT] "i", (![#uint64T] (slice.elem_ref #uint64T (![#sliceT] "s") (![#intT] "i"))) = (![#uint64T] "needle"))
     else do:  #());;;
-    return: (![#uint64T] "i", #false)).
+    return: (![#intT] "i", #false)).
 
 Definition ExampleA : go_string := "sys_verif_code/heap.ExampleA"%go.
 
@@ -437,26 +437,24 @@ Definition NewSearchTree : go_string := "sys_verif_code/heap.NewSearchTree"%go.
 (* go: search_tree.go:9:6 *)
 Definition NewSearchTreeⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "s" := (mem.alloc (type.zero_val #ptrT)) in
-    return: (![#ptrT] "s")).
+    exception_do (return: (#null)).
 
 Definition singletonTree : go_string := "sys_verif_code/heap.singletonTree"%go.
 
-(* go: search_tree.go:16:6 *)
+(* go: search_tree.go:13:6 *)
 Definition singletonTreeⁱᵐᵖˡ : val :=
   λ: "key",
     exception_do (let: "key" := (mem.alloc "key") in
-    let: "s" := (mem.alloc (type.zero_val #ptrT)) in
     return: (mem.alloc (let: "$key" := (![#uint64T] "key") in
-     let: "$left" := (![#ptrT] "s") in
-     let: "$right" := (![#ptrT] "s") in
+     let: "$left" := #null in
+     let: "$right" := #null in
      struct.make #SearchTree [{
        "key" ::= "$key";
        "left" ::= "$left";
        "right" ::= "$right"
      }]))).
 
-(* go: search_tree.go:22:22 *)
+(* go: search_tree.go:17:22 *)
 Definition SearchTree__Insertⁱᵐᵖˡ : val :=
   λ: "t" "key",
     exception_do (let: "t" := (mem.alloc "t") in
@@ -480,7 +478,7 @@ Definition SearchTree__Insertⁱᵐᵖˡ : val :=
       else do:  #()));;;
     return: (![#ptrT] "t")).
 
-(* go: search_tree.go:36:22 *)
+(* go: search_tree.go:31:22 *)
 Definition SearchTree__Containsⁱᵐᵖˡ : val :=
   λ: "t" "key",
     exception_do (let: "t" := (mem.alloc "t") in
@@ -589,20 +587,20 @@ Definition vars' : list (go_string * go_type) := [].
 
 Definition functions' : list (go_string * val) := [(BinarySearch, BinarySearchⁱᵐᵖˡ); (ExampleA, ExampleAⁱᵐᵖˡ); (ExampleB, ExampleBⁱᵐᵖˡ); (ExampleC, ExampleCⁱᵐᵖˡ); (ExampleD, ExampleDⁱᵐᵖˡ); (ExampleE, ExampleEⁱᵐᵖˡ); (collatzF, collatzFⁱᵐᵖˡ); (collatzIter, collatzIterⁱᵐᵖˡ); (ExampleG, ExampleGⁱᵐᵖˡ); (Swap, Swapⁱᵐᵖˡ); (IgnoreOne, IgnoreOneⁱᵐᵖˡ); (UseIgnoreOneOwnership, UseIgnoreOneOwnershipⁱᵐᵖˡ); (CopySlice, CopySliceⁱᵐᵖˡ); (StackEscape, StackEscapeⁱᵐᵖˡ); (FindMajority, FindMajorityⁱᵐᵖˡ); (NewStack, NewStackⁱᵐᵖˡ); (NewQueue, NewQueueⁱᵐᵖˡ); (NewSearchTree, NewSearchTreeⁱᵐᵖˡ); (singletonTree, singletonTreeⁱᵐᵖˡ); (ExamplePerson, ExamplePersonⁱᵐᵖˡ); (ExamplePersonRef, ExamplePersonRefⁱᵐᵖˡ)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [(S1.id, []); (ptrT.id S1.id, []); (Stack.id, []); (ptrT.id Stack.id, [("Pop"%go, Stack__Popⁱᵐᵖˡ); ("Push"%go, Stack__Pushⁱᵐᵖˡ)]); (Queue.id, [("Pop"%go, Queue__Popⁱᵐᵖˡ); ("Push"%go, Queue__Pushⁱᵐᵖˡ); ("emptyBack"%go, Queue__emptyBackⁱᵐᵖˡ)]); (ptrT.id Queue.id, [("Pop"%go, (λ: "$recvAddr",
-                 method_call #heap.heap #"Queue" #"Pop" (![#Queue] "$recvAddr")
-                 )%V); ("Push"%go, (λ: "$recvAddr",
-                 method_call #heap.heap #"Queue" #"Push" (![#Queue] "$recvAddr")
-                 )%V); ("emptyBack"%go, (λ: "$recvAddr",
-                 method_call #heap.heap #"Queue" #"emptyBack" (![#Queue] "$recvAddr")
-                 )%V)]); (SearchTree.id, []); (ptrT.id SearchTree.id, [("Contains"%go, SearchTree__Containsⁱᵐᵖˡ); ("Insert"%go, SearchTree__Insertⁱᵐᵖˡ)]); (Person.id, [("BuggySetAge"%go, Person__BuggySetAgeⁱᵐᵖˡ); ("Name"%go, Person__Nameⁱᵐᵖˡ)]); (ptrT.id Person.id, [("BuggySetAge"%go, (λ: "$recvAddr",
-                 method_call #heap.heap #"Person" #"BuggySetAge" (![#Person] "$recvAddr")
-                 )%V); ("GetAge"%go, Person__GetAgeⁱᵐᵖˡ); ("Name"%go, (λ: "$recvAddr",
-                 method_call #heap.heap #"Person" #"Name" (![#Person] "$recvAddr")
-                 )%V); ("Older"%go, Person__Olderⁱᵐᵖˡ)]); (Rect.id, [("Area"%go, Rect__Areaⁱᵐᵖˡ); ("IsSquare"%go, Rect__IsSquareⁱᵐᵖˡ)]); (ptrT.id Rect.id, [("Area"%go, (λ: "$recvAddr",
-                 method_call #heap.heap #"Rect" #"Area" (![#Rect] "$recvAddr")
-                 )%V); ("IsSquare"%go, (λ: "$recvAddr",
-                 method_call #heap.heap #"Rect" #"IsSquare" (![#Rect] "$recvAddr")
+Definition msets' : list (go_string * (list (go_string * val))) := [(S1.id, []); (ptrT.id S1.id, []); (Stack.id, []); (ptrT.id Stack.id, [("Pop"%go, Stack__Popⁱᵐᵖˡ); ("Push"%go, Stack__Pushⁱᵐᵖˡ)]); (Queue.id, [("Pop"%go, Queue__Popⁱᵐᵖˡ); ("Push"%go, Queue__Pushⁱᵐᵖˡ); ("emptyBack"%go, Queue__emptyBackⁱᵐᵖˡ)]); (ptrT.id Queue.id, [("Pop"%go, (λ: "$r",
+                 method_call #Queue.id #"Pop"%go (![#Queue] "$r")
+                 )%V); ("Push"%go, (λ: "$r",
+                 method_call #Queue.id #"Push"%go (![#Queue] "$r")
+                 )%V); ("emptyBack"%go, (λ: "$r",
+                 method_call #Queue.id #"emptyBack"%go (![#Queue] "$r")
+                 )%V)]); (SearchTree.id, []); (ptrT.id SearchTree.id, [("Contains"%go, SearchTree__Containsⁱᵐᵖˡ); ("Insert"%go, SearchTree__Insertⁱᵐᵖˡ)]); (Person.id, [("BuggySetAge"%go, Person__BuggySetAgeⁱᵐᵖˡ); ("Name"%go, Person__Nameⁱᵐᵖˡ)]); (ptrT.id Person.id, [("BuggySetAge"%go, (λ: "$r",
+                 method_call #Person.id #"BuggySetAge"%go (![#Person] "$r")
+                 )%V); ("GetAge"%go, Person__GetAgeⁱᵐᵖˡ); ("Name"%go, (λ: "$r",
+                 method_call #Person.id #"Name"%go (![#Person] "$r")
+                 )%V); ("Older"%go, Person__Olderⁱᵐᵖˡ)]); (Rect.id, [("Area"%go, Rect__Areaⁱᵐᵖˡ); ("IsSquare"%go, Rect__IsSquareⁱᵐᵖˡ)]); (ptrT.id Rect.id, [("Area"%go, (λ: "$r",
+                 method_call #Rect.id #"Area"%go (![#Rect] "$r")
+                 )%V); ("IsSquare"%go, (λ: "$r",
+                 method_call #Rect.id #"IsSquare"%go (![#Rect] "$r")
                  )%V); ("MakeSquare"%go, Rect__MakeSquareⁱᵐᵖˡ)])].
 
 #[global] Instance info' : PkgInfo heap.heap :=
@@ -610,7 +608,7 @@ Definition msets' : list (go_string * (list (go_string * val))) := [(S1.id, []);
     pkg_vars := vars';
     pkg_functions := functions';
     pkg_msets := msets';
-    pkg_imported_pkgs := [github_com.goose_lang.std.std];
+    pkg_imported_pkgs := [code.github_com.goose_lang.std.std];
   |}.
 
 Definition initialize' : val :=

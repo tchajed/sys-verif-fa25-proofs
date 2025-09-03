@@ -20,7 +20,7 @@ Global Instance is_pkg_defined_pure_functional : IsPkgDefinedPure functional :=
   {|
     is_pkg_defined_pure_def go_ctx :=
       is_pkg_defined_pure_single functional ∧
-      is_pkg_defined_pure github_com.goose_lang.std.std;
+      is_pkg_defined_pure code.github_com.goose_lang.std.std;
   |}.
 
 #[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
@@ -28,7 +28,7 @@ Global Program Instance is_pkg_defined_functional : IsPkgDefined functional :=
   {|
     is_pkg_defined_def go_ctx :=
       (is_pkg_defined_single functional ∗
-       is_pkg_defined github_com.goose_lang.std.std)%I
+       is_pkg_defined code.github_com.goose_lang.std.std)%I
   |}.
 Final Obligation. iIntros. iFrame "#%". Qed.
 #[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.
