@@ -238,6 +238,16 @@ Definition next_day (d: day) : day :=
   | sunday => monday
   end.
 
+(*| We can use case analysis to do proofs. |*)
+Definition is_weekend (d: day) :=
+  d = saturday \/ d = sunday.
+
+Lemma weekend_next_day_weekend (d: day) :
+  d = friday \/ d = saturday ->
+  is_weekend (next_day d).
+Proof.
+Admitted.
+
 (*| Proving an [exists] is complicated and we'll have more to say, but try to
 think through this intuitively for now. |*)
 Lemma wednesday_has_prev_day : exists d, next_day d = wednesday.
@@ -257,7 +267,7 @@ Lemma every_day_has_prev : forall d, exists d', next_day d' = d.
 Proof.
   (* Goal is a forall, so introduce it. *)
   intros d.
-Abort.
+Admitted.
 
 (*| ## Option monad
 
