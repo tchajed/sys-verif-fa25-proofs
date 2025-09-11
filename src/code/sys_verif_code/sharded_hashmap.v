@@ -20,10 +20,14 @@ Definition entry : go_type := structT [
   "key" :: uint32T;
   "val" :: uint64T
 ].
+#[global] Typeclasses Opaque entry.
+#[global] Opaque entry.
 
 Definition entryShard : go_type := structT [
   "entries" :: sliceT
 ].
+#[global] Typeclasses Opaque entryShard.
+#[global] Opaque entryShard.
 
 (* go: entries.go:17:23 *)
 Definition entryShard__Getⁱᵐᵖˡ : val :=
@@ -107,6 +111,8 @@ Definition entryShard__Storeⁱᵐᵖˡ : val :=
 Definition shard : go_type := structT [
   "m" :: mapT uint64T uint64T
 ].
+#[global] Typeclasses Opaque shard.
+#[global] Opaque shard.
 
 Definition newShard : go_string := "sys_verif_code/sharded_hashmap.newShard"%go.
 
@@ -174,10 +180,14 @@ Definition bucket : go_type := structT [
   "mu" :: ptrT;
   "subMap" :: ptrT
 ].
+#[global] Typeclasses Opaque bucket.
+#[global] Opaque bucket.
 
 Definition HashMap : go_type := structT [
   "buckets" :: sliceT
 ].
+#[global] Typeclasses Opaque HashMap.
+#[global] Opaque HashMap.
 
 Definition newBucket : go_string := "sys_verif_code/sharded_hashmap.newBucket"%go.
 

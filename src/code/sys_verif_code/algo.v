@@ -15,6 +15,8 @@ Definition Person : go_type := structT [
   "Name" :: stringT;
   "Age" :: uint64T
 ].
+#[global] Typeclasses Opaque Person.
+#[global] Opaque Person.
 
 Definition Sort : go_string := "sys_verif_code/algo.Sort"%go.
 

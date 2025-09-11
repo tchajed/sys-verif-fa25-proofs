@@ -15,6 +15,8 @@ Definition Node : go_type := structT [
   "elem" :: uint64T;
   "next" :: ptrT
 ].
+#[global] Typeclasses Opaque Node.
+#[global] Opaque Node.
 
 Definition New : go_string := "sys_verif_code/heap/linked_list.New"%go.
 

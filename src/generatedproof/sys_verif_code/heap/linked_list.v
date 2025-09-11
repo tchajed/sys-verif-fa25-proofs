@@ -21,6 +21,11 @@ End Node.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent linked_list.Node.
+#[local] Typeclasses Transparent linked_list.Node.
+
+Global Instance Node_wf : struct.Wf linked_list.Node.
+Proof. apply _. Qed.
 
 Global Instance settable_Node : Settable Node.t :=
   settable! Node.mk < Node.elem'; Node.next' >.

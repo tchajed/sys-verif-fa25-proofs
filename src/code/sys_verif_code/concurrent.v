@@ -18,6 +18,8 @@ Definition AtomicInt : go_type := structT [
   "x" :: uint64T;
   "mu" :: ptrT
 ].
+#[global] Typeclasses Opaque AtomicInt.
+#[global] Opaque AtomicInt.
 
 Definition NewAtomicInt : go_string := "sys_verif_code/concurrent.NewAtomicInt"%go.
 

@@ -21,6 +21,11 @@ End Person.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent algo.Person.
+#[local] Typeclasses Transparent algo.Person.
+
+Global Instance Person_wf : struct.Wf algo.Person.
+Proof. apply _. Qed.
 
 Global Instance settable_Person : Settable Person.t :=
   settable! Person.mk < Person.Name'; Person.Age' >.

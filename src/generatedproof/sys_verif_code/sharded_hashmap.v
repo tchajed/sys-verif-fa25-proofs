@@ -22,6 +22,11 @@ End entry.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent sharded_hashmap.entry.
+#[local] Typeclasses Transparent sharded_hashmap.entry.
+
+Global Instance entry_wf : struct.Wf sharded_hashmap.entry.
+Proof. apply _. Qed.
 
 Global Instance settable_entry : Settable entry.t :=
   settable! entry.mk < entry.key'; entry.val' >.
@@ -90,6 +95,11 @@ End entryShard.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent sharded_hashmap.entryShard.
+#[local] Typeclasses Transparent sharded_hashmap.entryShard.
+
+Global Instance entryShard_wf : struct.Wf sharded_hashmap.entryShard.
+Proof. apply _. Qed.
 
 Global Instance settable_entryShard : Settable entryShard.t :=
   settable! entryShard.mk < entryShard.entries' >.
@@ -151,6 +161,11 @@ End shard.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent sharded_hashmap.shard.
+#[local] Typeclasses Transparent sharded_hashmap.shard.
+
+Global Instance shard_wf : struct.Wf sharded_hashmap.shard.
+Proof. apply _. Qed.
 
 Global Instance settable_shard : Settable shard.t :=
   settable! shard.mk < shard.m' >.
@@ -213,6 +228,11 @@ End bucket.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent sharded_hashmap.bucket.
+#[local] Typeclasses Transparent sharded_hashmap.bucket.
+
+Global Instance bucket_wf : struct.Wf sharded_hashmap.bucket.
+Proof. apply _. Qed.
 
 Global Instance settable_bucket : Settable bucket.t :=
   settable! bucket.mk < bucket.mu'; bucket.subMap' >.
@@ -281,6 +301,11 @@ End HashMap.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent sharded_hashmap.HashMap.
+#[local] Typeclasses Transparent sharded_hashmap.HashMap.
+
+Global Instance HashMap_wf : struct.Wf sharded_hashmap.HashMap.
+Proof. apply _. Qed.
 
 Global Instance settable_HashMap : Settable HashMap.t :=
   settable! HashMap.mk < HashMap.buckets' >.

@@ -17,6 +17,8 @@ Definition Memoize : go_type := structT [
   "f" :: funcT;
   "results" :: mapT uint64T uint64T
 ].
+#[global] Typeclasses Opaque Memoize.
+#[global] Opaque Memoize.
 
 Definition NewMemoize : go_string := "sys_verif_code/memoize.NewMemoize"%go.
 
@@ -127,6 +129,8 @@ Definition UseMemoize2ⁱᵐᵖˡ : val :=
 Definition MockMemoize : go_type := structT [
   "f" :: funcT
 ].
+#[global] Typeclasses Opaque MockMemoize.
+#[global] Opaque MockMemoize.
 
 Definition NewMockMemoize : go_string := "sys_verif_code/memoize.NewMockMemoize"%go.
 

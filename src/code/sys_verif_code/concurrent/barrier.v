@@ -18,6 +18,8 @@ Definition Barrier : go_type := structT [
   "mu" :: ptrT;
   "cond" :: ptrT
 ].
+#[global] Typeclasses Opaque Barrier.
+#[global] Opaque Barrier.
 
 Definition New : go_string := "sys_verif_code/concurrent/barrier.New"%go.
 

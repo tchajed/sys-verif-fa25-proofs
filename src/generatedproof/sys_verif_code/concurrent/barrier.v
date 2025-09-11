@@ -24,6 +24,11 @@ End Barrier.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent barrier.Barrier.
+#[local] Typeclasses Transparent barrier.Barrier.
+
+Global Instance Barrier_wf : struct.Wf barrier.Barrier.
+Proof. apply _. Qed.
 
 Global Instance settable_Barrier : Settable Barrier.t :=
   settable! Barrier.mk < Barrier.numWaiting'; Barrier.mu'; Barrier.cond' >.

@@ -95,6 +95,8 @@ Definition S1 : go_type := structT [
   "a" :: uint64T;
   "b" :: sliceT
 ].
+#[global] Typeclasses Opaque S1.
+#[global] Opaque S1.
 
 Definition ExampleC : go_string := "sys_verif_code/heap.ExampleC"%go.
 
@@ -314,6 +316,8 @@ Definition FindMajorityⁱᵐᵖˡ : val :=
 Definition Stack : go_type := structT [
   "elements" :: sliceT
 ].
+#[global] Typeclasses Opaque Stack.
+#[global] Opaque Stack.
 
 Definition NewStack : go_string := "sys_verif_code/heap.NewStack"%go.
 
@@ -362,6 +366,8 @@ Definition Queue : go_type := structT [
   "back" :: ptrT;
   "front" :: ptrT
 ].
+#[global] Typeclasses Opaque Queue.
+#[global] Opaque Queue.
 
 Definition NewQueue : go_string := "sys_verif_code/heap.NewQueue"%go.
 
@@ -431,6 +437,8 @@ Definition SearchTree : go_type := structT [
   "left" :: ptrT;
   "right" :: ptrT
 ].
+#[global] Typeclasses Opaque SearchTree.
+#[global] Opaque SearchTree.
 
 Definition NewSearchTree : go_string := "sys_verif_code/heap.NewSearchTree"%go.
 
@@ -502,6 +510,8 @@ Definition Person : go_type := structT [
   "LastName" :: stringT;
   "Age" :: uint64T
 ].
+#[global] Typeclasses Opaque Person.
+#[global] Opaque Person.
 
 (* go: struct.go:9:17 *)
 Definition Person__Nameⁱᵐᵖˡ : val :=
@@ -562,6 +572,8 @@ Definition Rect : go_type := structT [
   "Width" :: uint64T;
   "Height" :: uint64T
 ].
+#[global] Typeclasses Opaque Rect.
+#[global] Opaque Rect.
 
 (* go: struct.go:46:15 *)
 Definition Rect__Areaⁱᵐᵖˡ : val :=

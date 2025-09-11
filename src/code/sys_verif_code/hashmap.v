@@ -17,6 +17,8 @@ Definition atomicPtr : go_type := structT [
   "mu" :: ptrT;
   "val" :: mapT uint64T uint64T
 ].
+#[global] Typeclasses Opaque atomicPtr.
+#[global] Opaque atomicPtr.
 
 Definition newAtomicPtr : go_string := "sys_verif_code/hashmap.newAtomicPtr"%go.
 
@@ -57,6 +59,8 @@ Definition HashMap : go_type := structT [
   "clean" :: ptrT;
   "mu" :: ptrT
 ].
+#[global] Typeclasses Opaque HashMap.
+#[global] Opaque HashMap.
 
 Definition NewHashMap : go_string := "sys_verif_code/hashmap.NewHashMap"%go.
 

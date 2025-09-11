@@ -22,6 +22,11 @@ End atomicPtr.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent hashmap.atomicPtr.
+#[local] Typeclasses Transparent hashmap.atomicPtr.
+
+Global Instance atomicPtr_wf : struct.Wf hashmap.atomicPtr.
+Proof. apply _. Qed.
 
 Global Instance settable_atomicPtr : Settable atomicPtr.t :=
   settable! atomicPtr.mk < atomicPtr.mu'; atomicPtr.val' >.
@@ -91,6 +96,11 @@ End HashMap.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent hashmap.HashMap.
+#[local] Typeclasses Transparent hashmap.HashMap.
+
+Global Instance HashMap_wf : struct.Wf hashmap.HashMap.
+Proof. apply _. Qed.
 
 Global Instance settable_HashMap : Settable HashMap.t :=
   settable! HashMap.mk < HashMap.clean'; HashMap.mu' >.

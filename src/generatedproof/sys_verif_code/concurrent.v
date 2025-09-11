@@ -24,6 +24,11 @@ End AtomicInt.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent concurrent.AtomicInt.
+#[local] Typeclasses Transparent concurrent.AtomicInt.
+
+Global Instance AtomicInt_wf : struct.Wf concurrent.AtomicInt.
+Proof. apply _. Qed.
 
 Global Instance settable_AtomicInt : Settable AtomicInt.t :=
   settable! AtomicInt.mk < AtomicInt.x'; AtomicInt.mu' >.

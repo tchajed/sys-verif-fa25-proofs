@@ -22,6 +22,11 @@ End S1.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent heap.S1.
+#[local] Typeclasses Transparent heap.S1.
+
+Global Instance S1_wf : struct.Wf heap.S1.
+Proof. apply _. Qed.
 
 Global Instance settable_S1 : Settable S1.t :=
   settable! S1.mk < S1.a'; S1.b' >.
@@ -90,6 +95,11 @@ End Stack.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent heap.Stack.
+#[local] Typeclasses Transparent heap.Stack.
+
+Global Instance Stack_wf : struct.Wf heap.Stack.
+Proof. apply _. Qed.
 
 Global Instance settable_Stack : Settable Stack.t :=
   settable! Stack.mk < Stack.elements' >.
@@ -152,6 +162,11 @@ End Queue.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent heap.Queue.
+#[local] Typeclasses Transparent heap.Queue.
+
+Global Instance Queue_wf : struct.Wf heap.Queue.
+Proof. apply _. Qed.
 
 Global Instance settable_Queue : Settable Queue.t :=
   settable! Queue.mk < Queue.back'; Queue.front' >.
@@ -222,6 +237,11 @@ End SearchTree.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent heap.SearchTree.
+#[local] Typeclasses Transparent heap.SearchTree.
+
+Global Instance SearchTree_wf : struct.Wf heap.SearchTree.
+Proof. apply _. Qed.
 
 Global Instance settable_SearchTree : Settable SearchTree.t :=
   settable! SearchTree.mk < SearchTree.key'; SearchTree.left'; SearchTree.right' >.
@@ -299,6 +319,11 @@ End Person.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent heap.Person.
+#[local] Typeclasses Transparent heap.Person.
+
+Global Instance Person_wf : struct.Wf heap.Person.
+Proof. apply _. Qed.
 
 Global Instance settable_Person : Settable Person.t :=
   settable! Person.mk < Person.FirstName'; Person.LastName'; Person.Age' >.
@@ -375,6 +400,11 @@ End Rect.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent heap.Rect.
+#[local] Typeclasses Transparent heap.Rect.
+
+Global Instance Rect_wf : struct.Wf heap.Rect.
+Proof. apply _. Qed.
 
 Global Instance settable_Rect : Settable Rect.t :=
   settable! Rect.mk < Rect.Width'; Rect.Height' >.

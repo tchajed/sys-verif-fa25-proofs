@@ -22,6 +22,11 @@ End Memoize.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent memoize.Memoize.
+#[local] Typeclasses Transparent memoize.Memoize.
+
+Global Instance Memoize_wf : struct.Wf memoize.Memoize.
+Proof. apply _. Qed.
 
 Global Instance settable_Memoize : Settable Memoize.t :=
   settable! Memoize.mk < Memoize.f'; Memoize.results' >.
@@ -90,6 +95,11 @@ End MockMemoize.
 
 Section instances.
 Context `{ffi_syntax}.
+#[local] Transparent memoize.MockMemoize.
+#[local] Typeclasses Transparent memoize.MockMemoize.
+
+Global Instance MockMemoize_wf : struct.Wf memoize.MockMemoize.
+Proof. apply _. Qed.
 
 Global Instance settable_MockMemoize : Settable MockMemoize.t :=
   settable! MockMemoize.mk < MockMemoize.f' >.
