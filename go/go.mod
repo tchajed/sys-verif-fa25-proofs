@@ -3,8 +3,8 @@ module sys_verif_code
 go 1.24
 
 require (
-	github.com/goose-lang/std v0.6.1
-	github.com/stretchr/testify v1.10.0
+	github.com/goose-lang/std v0.7.0
+	github.com/stretchr/testify v1.11.1
 	pgregory.net/rapid v1.2.0
 )
 
