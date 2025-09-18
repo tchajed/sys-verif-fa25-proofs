@@ -93,7 +93,7 @@ Admitted. (* exercise for the reader *)
 (*| To summarize, the interface to the code we export to the client (which we'll
 have to write a spec for) consists of the following signatures:
 
-```coq
+```rocq
 Definition big_int : Type.
 
 Definition zero : big_int.
@@ -624,7 +624,8 @@ Proof.
       destruct (decide (x ∈ st_rep t1)).
       * rewrite decide_True //. set_solver.
       * rewrite decide_False //.
-        (* We will prove that x is not in each of these three parts. We already have `x ∉ st_rep` by assumption. *)
+        (* We will prove that x is not in each of these three parts. We already
+        have [x ∉ st_rep t1] by assumption. *)
         assert (x ≠ el) by lia.
         (* x being on the right side is a contradiction: we are in a branch
         (from much earlier) where [x < el] but on the right side of the tree [el
@@ -634,7 +635,8 @@ Proof.
           apply Hgt in Hel.
           lia. }
         set_solver.
-    + destruct Hinv as (Hlt & Hgt & Hinvt1 & Hinvt2).
+    + (* This branch is when [x ≥ el]. *)
+      destruct Hinv as (Hlt & Hgt & Hinvt1 & Hinvt2).
       destruct (decide (el < x)).
       * rewrite -> IHt2 by auto.
         (* NOTE: you could do the rest of this proof with more basic techniques,
