@@ -70,8 +70,6 @@ Proof.
     rewrite bool_decide_eq_true_2 //.
   - rewrite decide_False //.
     rewrite bool_decide_eq_false_2 //.
-    rewrite to_val_unseal /to_val_def /=.
-    congruence.
 Qed.
 
 Lemma if_decide_bool_decide_eq_false (P: Prop) `{!Decision P}
@@ -82,8 +80,6 @@ Proof.
   destruct (decide P).
   - rewrite decide_False //.
     rewrite bool_decide_eq_true_2 //.
-    rewrite to_val_unseal /to_val_def /=.
-    congruence.
   - rewrite decide_True //.
     rewrite bool_decide_eq_false_2 //.
 Qed.
@@ -102,7 +98,6 @@ Proof.
     iPureIntro.
     reflexivity.
   }
-  wp_auto.
 
 (*| The core of the proof's argument is this loop invariant about the `prev` and
 `cur` variables. |*)
@@ -125,7 +120,7 @@ Proof.
   wp_for; iNamed "IH"; wp_auto.
   - rewrite if_decide_bool_decide_eq_true //.
     destruct (decide _); try wp_auto.
-    + iApply wp_for_post_do. wp_auto.
+    + wp_for_post.
       iFrame.
       iPureIntro.
       split.
