@@ -191,7 +191,7 @@ Proof.
   intros HQ.
   iIntros "(H1 & H2 & H3)".
 
-  (*| At this point `iApply HQ` needs to produce two subgoals: one for `P1 ∗ P3` and another for `P2`. By default, it will assume you want all hypotheses for the last subgoal, which makes this proof unprovable.
+(*| At this point `iApply HQ` needs to produce two subgoals: one for `P1 ∗ P3` and another for `P2`. By default, it will assume you want all hypotheses for the last subgoal, which makes this proof unprovable.
 
   Instead, we will use a _specialization pattern_ `with "[H1 H3]"` to divide the premises up. |*)
   iApply (HQ with "[H1 H3]").
@@ -211,10 +211,10 @@ Proof.
 
   iDestruct (HQ with "[H1 H3]") as "HQ".
 
-  (*| The first goal is the premise of `HQ` (using the hypotheses we made available using `with "[H1 H3]"`). The second goal has `HQ`. |*)
+(*| The first goal is the premise of `HQ` (using the hypotheses we made available using `with "[H1 H3]"`). The second goal has `HQ`. |*)
   { iFrame. }
 
-  (*| "H2" and "HQ" are lost after this tactic, which is actually required because of separation logic; the wand is "used up" in proving `Q`, in the same ay that "H1" and "H3" were used in the premise of `HQ`. |*)
+(*| "H2" and "HQ" are lost after this tactic, which is actually required because of separation logic; the wand is "used up" in proving `Q`, in the same ay that "H1" and "H3" were used in the premise of `HQ`. |*)
   iDestruct ("HQ" with "[H2]") as "HQ".
   { iFrame. }
 
@@ -229,11 +229,11 @@ Proof.
   intros HQ.
   iIntros "(H1 & H2 & H3)".
 
-  (*| `$H1` in a specialization pattern frames that hypothesis right away. We don't do the same with `"H3"` only for illustration purposes. |*)
+(*| `$H1` in a specialization pattern frames that hypothesis right away. We don't do the same with `"H3"` only for illustration purposes. |*)
   iDestruct (HQ with "[$H1 H3]") as "HQ".
   { iFrame "H3". }
 
-  (*| `as "$"` is an introduction pattern that does not name the resulting hypothesis but instead immediately frames it with something in the goal. In this case that finishes the proof. |*)
+(*| `as "$"` is an introduction pattern that does not name the resulting hypothesis but instead immediately frames it with something in the goal. In this case that finishes the proof. |*)
   iDestruct ("HQ" with "[$H2]") as "$".
 Qed.
 
@@ -244,7 +244,7 @@ Qed.
 Lemma pure_intro_pattern `{hG: !heapGS Σ} (t a b: w64) (x y: loc) :
   ⌜t = a⌝ ∗ x ↦ b ∗ y ↦ t -∗ x ↦ b ∗ y ↦ a.
 Proof.
-  (*| The `%Heq` intro pattern moves the hypothesis into the Rocq context (sometimes called the "pure" context). It is unusual in that `Heq` appears in a string but turns into a Rocq identifier. |*)
+(*| The `%Heq` intro pattern moves the hypothesis into the Rocq context (sometimes called the "pure" context). It is unusual in that `Heq` appears in a string but turns into a Rocq identifier. |*)
   iIntros "(%Heq & Hx & Hy)".
   iFrame.
   rewrite Heq.
@@ -268,7 +268,7 @@ Go to the [IPM documentation](https://gitlab.mpi-sws.org/iris/iris/-/blob/master
 
 |*)
 
-(*| ### Exercises
+(*| ### Exercise: complete proofs on your own
 
 The lemmas above are repeated here (plus a few new ones). Fill in the proofs, looking above at solutions only when you get stuck. |*)
 
@@ -317,7 +317,7 @@ Admitted.
 
 (*| One last tactic: you will need to use `iModIntro` in a couple situations.
 
-`iModIntro` "introduces a modality". You'll use it for the _later modality_ `▷ P` and for the _fancy update modality_ `|==> P` (often pronounced "fup-d", or "update"). We'll talk about these more later in subsequent lectures, as they come up.
+`iModIntro` "introduces a modality" in the goal. You'll use it for the _later modality_ `▷ P` and for the _fancy update modality_ `|==> P` (often pronounced "fup-d", or "update"). We'll talk about these more later in subsequent lectures, as they come up.
 
 Modalities can also be introduced with `iIntros` using the pattern "!>".
 
@@ -337,6 +337,8 @@ Proof.
   iIntros "H !>".
   iFrame.
 Qed.
+
+(*| The effect of `iModIntro` is to remove a modality from the goal, so you might wonder why it's called an "introduction" tactic. The reason is due to thinking of the proof in a forward direction (from assumptions to goals) rather than a backward direction (as we often use in Rocq). From that perspective, `iModIntro` applies a rule that allows us to prove `▷ P` or `|==> P`, thus _introducing_ it in the proof. |*)
 
 (*| ## Program proofs in the IPM
 
@@ -454,43 +456,43 @@ Lemma wp_UseIgnoreOneOwnership :
   {{{ RET #(); True }}}.
 Proof.
   wp_start as "Hpre". (* precondition is trivial, but we'll name it anyway *)
-  rewrite -default_val_eq_zero_val.
+  rewrite -default_val_eq_zero_val. (* only for demo; needed due to using iApply wp_alloc below *)
 
 (*| The next step in the proof outline is this call to `ref_to`, which allocates.
 
-Formally, the proof proceeds by applying the bind rule (to split the program into `ref_to uint64T #(W64 0)` and the rest of the code that uses this value). We can use an IPM tactic to automate this process, in particular identifying the context `K` in the bind rule.
+Formally, the proof proceeds by applying the bind rule (to split the program into `alloc #(default_val w64)` and the rest of the code that uses this value). We can use an IPM tactic to automate this process, in particular identifying the context `K` in the bind rule.
 |*)
   wp_bind (alloc #(default_val w64))%E.
 
-(*| Take a moment to read this goal: it says we need to prove a specification for just `ref` in which the postcondition contains the remainder of the code. Where the original code had `ref_to ...` it now has `v`, the return value of allocating; this is `K[v]` from the bind rule.
+(*| Take a moment to read this goal: it says we need to prove a specification for just `alloc` in which the postcondition contains the remainder of the code. Where the original code had `alloc ...` it now has `v`, the return value of allocating; this is `K[v]` from the bind rule.
 
 The next step you'd expect is that we need to use the rule of consequence to prove this goal from the existing specification for `ref`:
 |*)
   Check wp_alloc.
 
-  (*| We do _not_ end up needing the rule of consequence. The reason is that the meaning of `{{{ P }}} e {{{ RET v; Q }}}` in Iris already has consequence built-in. |*)
+(*| We do _not_ end up needing the rule of consequence. The reason is that the meaning of `{{{ P }}} e {{{ RET v; Q }}}` in Iris already has consequence built-in. |*)
 
   iApply wp_alloc.
   { (* the (trivial) precondition in wp_alloc *)
     auto. }
 
-  iModIntro. (* don't worry about this for now *)
+  iModIntro. (* introduce the later *)
   iIntros (x) "Hx".
 
-  (*| At this point there is a `let:` binding which we need to apply the pure-step rule to. Thankfully, the IPM has automation to handle this for us. |*)
+(*| At this point there is a `let:` binding which we need to apply the pure-step rule to. Thankfully, the IPM has automation to handle this for us. |*)
   wp_pures.
 
-  (*| The IPM can automate all of the above for allocation, load, and store: |*)
+(*| The IPM can automate all of the above for allocation, load, and store: |*)
   wp_store. wp_pures.
   wp_alloc y as "Hy".
   wp_pures.
   wp_store. wp_pures.
   wp_bind (@! heap.IgnoreOne _ _)%E. (* make the goal easier to understand *)
 
-  (*| You might think we should do `iApply wp_IgnoreOne`. Let's see what happens if we do that: |*)
+(*| You might think we should do `iApply wp_IgnoreOne`. Let's see what happens if we do that: |*)
   iApply wp_IgnoreOne.
 
-  (*| The first goal is clearly unprovable! It asks us to prove a points-to fact with no assumptions. This is coming from the precondition in `wp_IgnoreOneLocF`. If you look at the second goal, we have the relevant fact in `Hx`.
+(*| The first goal is clearly unprovable! It asks us to prove a points-to fact with no assumptions. This is coming from the precondition in `wp_IgnoreOneLocF`. If you look at the second goal, we have the relevant fact in `Hx`.
 
 What's going on is that `wp_IgnoreOne` is of the form:
 
@@ -510,12 +512,58 @@ The IPM provides several mechanisms for deciding on these splits. A _specializat
   (* this re-introduces the postcondition in `wp_IgnoreOne` *)
   iIntros "Hx".
 
-  (*| We'll now breeze through the rest of the proof: |*)
+(*| We'll now breeze through the rest of the proof: |*)
   wp_auto.
   wp_apply (wp_Assert).
   { rewrite bool_decide_eq_true_2 //. }
   iApply "HΦ". done.
 Qed.
 
+(*| ### Exercise: complete proofs
+
+Here are some simple examples of some specifications for practice using previously proven specifications. You should call previously proven specifications with `wp_apply`.
+
+|*)
+
+Definition f: val := λ: <>, #().
+Definition g: val := λ: "x", f "x";; #(W64 1).
+Definition h: val := λ: "l",
+    let: "y" := g "l" in
+    ![#uint32T] "l";;
+    "y".
+
+Lemma wp_f l (x: w32) :
+  {{{ l ↦ x }}}
+    f #l
+  {{{ RET #(); l ↦ x }}}.
+Proof.
+  wp_start as "l".
+  wp_call.
+  iApply "HΦ".
+Admitted.
+
+Lemma wp_g (l: loc) (x: w32) :
+  {{{ l ↦ x }}}
+    g #l
+  {{{ (y: w64), RET #y; ⌜uint.Z y < 10⌝ ∗ l ↦ x }}}.
+Proof.
+  wp_start as "l".
+  wp_call.
+Admitted.  
+
+Lemma wp_h (l: loc) (x: w32) :
+  {{{ l ↦ x }}}
+    h #l
+  {{{ (y: w64), RET #y; ⌜uint.Z y < 20⌝ ∗ l ↦ x }}}.
+Proof.
+Admitted.  
+
+(*| A bonus proof. Can this be done from your previous work in wp_f, wp_g, and even wp_h? Why or why not? How could you prove it? |*)
+Lemma wp_h' (l: loc) (x: w32) :
+  {{{ l ↦ x }}}
+    h #l
+  {{{ (y: w64), RET #y; ⌜uint.Z y < 2⌝ ∗ l ↦ x }}}.
+Proof.
+Admitted.
 (*|  |*)
 End ipm.
