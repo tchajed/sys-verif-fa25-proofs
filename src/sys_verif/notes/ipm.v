@@ -521,9 +521,11 @@ Qed.
 
 (*| ### Exercise: complete proofs
 
-Here are some simple examples of some specifications for practice using previously proven specifications. You should call previously proven specifications with `wp_apply`.
-
 |*)
+
+(* Here are some simple examples of some specifications for practice using
+previously proven specifications. You should call previously proven
+specifications with `wp_apply`. *)
 
 Definition f: val := λ: <>, #().
 Definition g: val := λ: "x", f "x";; #(W64 1).
@@ -565,5 +567,6 @@ Lemma wp_h' (l: loc) (x: w32) :
   {{{ (y: w64), RET #y; ⌜uint.Z y < 2⌝ ∗ l ↦ x }}}.
 Proof.
 Admitted.
+
 (*|  |*)
 End ipm.
