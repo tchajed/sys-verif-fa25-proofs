@@ -53,11 +53,13 @@ Definition Midpoint2ⁱᵐᵖˡ : val :=
   λ: "x" "y",
     exception_do (let: "y" := (mem.alloc "y") in
     let: "x" := (mem.alloc "x") in
-    return: ((![#uint64T] "x") + (((![#uint64T] "y") - (![#uint64T] "x")) `quot` #(W64 2)))).
+    (if: (![#uint64T] "x") ≤ (![#uint64T] "y")
+    then return: ((![#uint64T] "x") + (((![#uint64T] "y") - (![#uint64T] "x")) `quot` #(W64 2)))
+    else return: ((![#uint64T] "y") + (((![#uint64T] "x") - (![#uint64T] "y")) `quot` #(W64 2))))).
 
 Definition Arith : go_string := "sys_verif_code/functional.Arith"%go.
 
-(* go: functional.go:27:6 *)
+(* go: functional.go:31:6 *)
 Definition Arithⁱᵐᵖˡ : val :=
   λ: "a" "b",
     exception_do (let: "b" := (mem.alloc "b") in
@@ -71,7 +73,7 @@ Definition Arithⁱᵐᵖˡ : val :=
     let: "mid" := (mem.alloc (type.zero_val #uint64T)) in
     let: "$r0" := (let: "$a0" := (![#uint64T] "a") in
     let: "$a1" := (![#uint64T] "b") in
-    (func_call #Midpoint) "$a0" "$a1") in
+    (func_call #Midpoint2) "$a0" "$a1") in
     do:  ("mid" <-[#uint64T] "$r0");;;
     return: (![#uint64T] "mid")).
 
@@ -79,7 +81,7 @@ Definition SumNrec : go_string := "sys_verif_code/functional.SumNrec"%go.
 
 (* SumNrec adds up the numbers from 1 to n, recursively.
 
-   go: functional.go:37:6 *)
+   go: functional.go:41:6 *)
 Definition SumNrecⁱᵐᵖˡ : val :=
   λ: "n",
     exception_do (let: "n" := (mem.alloc "n") in
@@ -93,7 +95,7 @@ Definition SumN : go_string := "sys_verif_code/functional.SumN"%go.
 
 (* SumN adds up the numbers from 1 to n, with a loop.
 
-   go: functional.go:45:6 *)
+   go: functional.go:49:6 *)
 Definition SumNⁱᵐᵖˡ : val :=
   λ: "n",
     exception_do (let: "n" := (mem.alloc "n") in
@@ -118,7 +120,7 @@ Definition Fibonacci : go_string := "sys_verif_code/functional.Fibonacci"%go.
 
 (* Fibonacci returns the nth Fibonacci number
 
-   go: functional.go:59:6 *)
+   go: functional.go:63:6 *)
 Definition Fibonacciⁱᵐᵖˡ : val :=
   λ: "n",
     exception_do (let: "n" := (mem.alloc "n") in
@@ -148,7 +150,7 @@ Definition Factorial : go_string := "sys_verif_code/functional.Factorial"%go.
 
 (* Factorial returns n factorial
 
-   go: functional.go:74:6 *)
+   go: functional.go:78:6 *)
 Definition Factorialⁱᵐᵖˡ : val :=
   λ: "n",
     exception_do (let: "n" := (mem.alloc "n") in
@@ -170,7 +172,7 @@ Definition FastExp : go_string := "sys_verif_code/functional.FastExp"%go.
 
 (* FastExp returns b to the power of n0
 
-   go: functional.go:88:6 *)
+   go: functional.go:92:6 *)
 Definition FastExpⁱᵐᵖˡ : val :=
   λ: "b" "n0",
     exception_do (let: "n0" := (mem.alloc "n0") in

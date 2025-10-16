@@ -21,7 +21,11 @@ func Midpoint(x, y uint64) uint64 {
 
 // Midpoint2 calculates the midpoint in an overflow-proof way
 func Midpoint2(x, y uint64) uint64 {
-	return x + (y-x)/2
+	if x <= y {
+		return x + (y-x)/2
+	} else {
+		return y + (x-y)/2
+	}
 }
 
 func Arith(a, b uint64) uint64 {
@@ -29,7 +33,7 @@ func Arith(a, b uint64) uint64 {
 	if sum == 7 {
 		return a
 	}
-	mid := Midpoint(a, b)
+	mid := Midpoint2(a, b)
 	return mid
 }
 
