@@ -1,6 +1,6 @@
 
 (*| 
-# Demo: proofs of simple Go code
+# Demo: proofs of functional Go code
 
 Here are some proofs of "functional" Go code that just does some arithmetic and
 doesn't interact with the heap.

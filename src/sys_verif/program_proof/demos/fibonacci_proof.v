@@ -1,6 +1,6 @@
 (*| # Demo: verifying fibonacci function
 
-> The Coq code for this file is at [src/sys_verif/program_proof/demos/fibonacci_proof.v](https://github.com/tchajed/sys-verif-fa25-proofs/blob/main/src/sys_verif/program_proof/demos/fibonacci_proof.v).
+> The Rocq code for this file is at [src/sys_verif/program_proof/demos/fibonacci_proof.v](https://github.com/tchajed/sys-verif-fa25-proofs/blob/main/src/sys_verif/program_proof/demos/fibonacci_proof.v).
 
 The code in
 [go/functional/functional.go](https://github.com/tchajed/sys-verif-fa25-proofs/blob/main/go/functional/functional.go)
