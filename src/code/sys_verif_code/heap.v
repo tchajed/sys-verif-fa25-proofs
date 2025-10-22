@@ -231,16 +231,13 @@ Definition CopySliceⁱᵐᵖˡ : val :=
   λ: "dst" "src",
     exception_do (let: "src" := (mem.alloc "src") in
     let: "dst" := (mem.alloc "dst") in
-    let: "l" := (mem.alloc (type.zero_val #uint64T)) in
-    let: "$r0" := (s_to_w64 (let: "$a0" := (![#sliceT] "dst") in
-    slice.len "$a0")) in
-    do:  ("l" <-[#uint64T] "$r0");;;
-    (let: "i" := (mem.alloc (type.zero_val #uint64T)) in
+    (let: "i" := (mem.alloc (type.zero_val #intT)) in
     let: "$r0" := #(W64 0) in
-    do:  ("i" <-[#uint64T] "$r0");;;
-    (for: (λ: <>, (![#uint64T] "i") < (![#uint64T] "l")); (λ: <>, do:  ("i" <-[#uint64T] ((![#uint64T] "i") + #(W64 1)))) := λ: <>,
-      let: "$r0" := (![#byteT] (slice.elem_ref #byteT (![#sliceT] "src") (![#uint64T] "i"))) in
-      do:  ((slice.elem_ref #byteT (![#sliceT] "dst") (![#uint64T] "i")) <-[#byteT] "$r0")));;;
+    do:  ("i" <-[#intT] "$r0");;;
+    (for: (λ: <>, int_lt (![#intT] "i") (let: "$a0" := (![#sliceT] "dst") in
+    slice.len "$a0")); (λ: <>, do:  ("i" <-[#intT] ((![#intT] "i") + #(W64 1)))) := λ: <>,
+      let: "$r0" := (![#byteT] (slice.elem_ref #byteT (![#sliceT] "src") (![#intT] "i"))) in
+      do:  ((slice.elem_ref #byteT (![#sliceT] "dst") (![#intT] "i")) <-[#byteT] "$r0")));;;
     return: #()).
 
 Definition StackEscape : go_string := "sys_verif_code/heap.StackEscape"%go.
@@ -249,13 +246,27 @@ Definition StackEscape : go_string := "sys_verif_code/heap.StackEscape"%go.
 
    This illustrates both how Go works and ownership principles.
 
-   go: heap.go:40:6 *)
+   go: heap.go:39:6 *)
 Definition StackEscapeⁱᵐᵖˡ : val :=
   λ: <>,
     exception_do (let: "x" := (mem.alloc (type.zero_val #intT)) in
     let: "$r0" := #(W64 42) in
     do:  ("x" <-[#intT] "$r0");;;
     return: ("x")).
+
+Definition SliceSwap : go_string := "sys_verif_code/heap.SliceSwap"%go.
+
+(* go: heap.go:44:6 *)
+Definition SliceSwapⁱᵐᵖˡ : val :=
+  λ: "s" "i" "j",
+    exception_do (let: "j" := (mem.alloc "j") in
+    let: "i" := (mem.alloc "i") in
+    let: "s" := (mem.alloc "s") in
+    let: "$r0" := (![#intT] (slice.elem_ref #intT (![#sliceT] "s") (![#intT] "j"))) in
+    let: "$r1" := (![#intT] (slice.elem_ref #intT (![#sliceT] "s") (![#intT] "i"))) in
+    do:  ((slice.elem_ref #intT (![#sliceT] "s") (![#intT] "i")) <-[#intT] "$r0");;;
+    do:  ((slice.elem_ref #intT (![#sliceT] "s") (![#intT] "j")) <-[#intT] "$r1");;;
+    return: #()).
 
 Definition FindMajority : go_string := "sys_verif_code/heap.FindMajority"%go.
 
@@ -597,7 +608,7 @@ Definition Rect__MakeSquareⁱᵐᵖˡ : val :=
 
 Definition vars' : list (go_string * go_type) := [].
 
-Definition functions' : list (go_string * val) := [(BinarySearch, BinarySearchⁱᵐᵖˡ); (ExampleA, ExampleAⁱᵐᵖˡ); (ExampleB, ExampleBⁱᵐᵖˡ); (ExampleC, ExampleCⁱᵐᵖˡ); (ExampleD, ExampleDⁱᵐᵖˡ); (ExampleE, ExampleEⁱᵐᵖˡ); (collatzF, collatzFⁱᵐᵖˡ); (collatzIter, collatzIterⁱᵐᵖˡ); (ExampleG, ExampleGⁱᵐᵖˡ); (Swap, Swapⁱᵐᵖˡ); (IgnoreOne, IgnoreOneⁱᵐᵖˡ); (UseIgnoreOneOwnership, UseIgnoreOneOwnershipⁱᵐᵖˡ); (CopySlice, CopySliceⁱᵐᵖˡ); (StackEscape, StackEscapeⁱᵐᵖˡ); (FindMajority, FindMajorityⁱᵐᵖˡ); (NewStack, NewStackⁱᵐᵖˡ); (NewQueue, NewQueueⁱᵐᵖˡ); (NewSearchTree, NewSearchTreeⁱᵐᵖˡ); (singletonTree, singletonTreeⁱᵐᵖˡ); (ExamplePerson, ExamplePersonⁱᵐᵖˡ); (ExamplePersonRef, ExamplePersonRefⁱᵐᵖˡ)].
+Definition functions' : list (go_string * val) := [(BinarySearch, BinarySearchⁱᵐᵖˡ); (ExampleA, ExampleAⁱᵐᵖˡ); (ExampleB, ExampleBⁱᵐᵖˡ); (ExampleC, ExampleCⁱᵐᵖˡ); (ExampleD, ExampleDⁱᵐᵖˡ); (ExampleE, ExampleEⁱᵐᵖˡ); (collatzF, collatzFⁱᵐᵖˡ); (collatzIter, collatzIterⁱᵐᵖˡ); (ExampleG, ExampleGⁱᵐᵖˡ); (Swap, Swapⁱᵐᵖˡ); (IgnoreOne, IgnoreOneⁱᵐᵖˡ); (UseIgnoreOneOwnership, UseIgnoreOneOwnershipⁱᵐᵖˡ); (CopySlice, CopySliceⁱᵐᵖˡ); (StackEscape, StackEscapeⁱᵐᵖˡ); (SliceSwap, SliceSwapⁱᵐᵖˡ); (FindMajority, FindMajorityⁱᵐᵖˡ); (NewStack, NewStackⁱᵐᵖˡ); (NewQueue, NewQueueⁱᵐᵖˡ); (NewSearchTree, NewSearchTreeⁱᵐᵖˡ); (singletonTree, singletonTreeⁱᵐᵖˡ); (ExamplePerson, ExamplePersonⁱᵐᵖˡ); (ExamplePersonRef, ExamplePersonRefⁱᵐᵖˡ)].
 
 Definition msets' : list (go_string * (list (go_string * val))) := [(S1.id, []); (ptrT.id S1.id, []); (Stack.id, []); (ptrT.id Stack.id, [("Pop"%go, Stack__Popⁱᵐᵖˡ); ("Push"%go, Stack__Pushⁱᵐᵖˡ)]); (Queue.id, [("Pop"%go, Queue__Popⁱᵐᵖˡ); ("Push"%go, Queue__Pushⁱᵐᵖˡ); ("emptyBack"%go, Queue__emptyBackⁱᵐᵖˡ)]); (ptrT.id Queue.id, [("Pop"%go, (λ: "$r",
                  method_call #Queue.id #"Pop"%go (![#Queue] "$r")

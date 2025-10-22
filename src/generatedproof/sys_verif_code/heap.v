@@ -541,6 +541,10 @@ Global Instance wp_func_call_StackEscape :
   WpFuncCall heap.StackEscape _ (is_pkg_defined heap) :=
   ltac:(solve_wp_func_call).
 
+Global Instance wp_func_call_SliceSwap :
+  WpFuncCall heap.SliceSwap _ (is_pkg_defined heap) :=
+  ltac:(solve_wp_func_call).
+
 Global Instance wp_func_call_FindMajority :
   WpFuncCall heap.FindMajority _ (is_pkg_defined heap) :=
   ltac:(solve_wp_func_call).

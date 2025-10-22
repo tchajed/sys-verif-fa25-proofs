@@ -28,8 +28,7 @@ func UseIgnoreOneOwnership() {
 //
 // dst must be at least as long as src
 func CopySlice(dst []byte, src []byte) {
-	l := uint64(len(dst))
-	for i := uint64(0); i < l; i++ {
+	for i := 0; i < len(dst); i++ {
 		dst[i] = src[i]
 	}
 }
@@ -40,4 +39,8 @@ func CopySlice(dst []byte, src []byte) {
 func StackEscape() *int {
 	x := 42
 	return &x
+}
+
+func SliceSwap(s []int, i, j int) {
+	s[i], s[j] = s[j], s[i]
 }
