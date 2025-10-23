@@ -42,7 +42,7 @@ Proof.
   wp_alloc l as "H".
   wp_auto.
   iApply struct_fields_split in "H". iNamed "H". cbn [heap.Stack.elements'].
-  iApply "HΦ".
+  wp_finish.
   iFrame.
   iSplitL.
   - iApply own_slice_nil.
@@ -61,7 +61,7 @@ Proof.
   wp_apply (wp_slice_append with "[$Hels $Hels_cap $Hs_tmp]").
   iIntros (s') "(Hels & Hels_cap & Hs_tmp)".
   wp_auto.
-  iApply "HΦ".
+  wp_finish.
   iFrame "elements Hels_cap".
   rewrite reverse_cons.
   iFrame.
@@ -101,7 +101,7 @@ Proof.
   iDestruct (own_slice_len with "Hels") as %Hlen.
   wp_if_destruct.
   {
-    iApply "HΦ".
+    wp_finish.
     iFrame.
     iPureIntro.
     rewrite /stack_pop.
@@ -139,7 +139,7 @@ Proof.
   { exfalso; simpl in *; lia. }
   simpl in Hget; inversion Hget; subst.
 
-  iApply "HΦ".
+  wp_finish.
   rewrite /stack_rep.
   iFrame "elements".
   iSplit.
@@ -156,6 +156,7 @@ Proof.
   iPureIntro.
   rewrite /stack_pop.
   reflexivity.
+  Fail idtac.
 Admitted.
 
 End proof.

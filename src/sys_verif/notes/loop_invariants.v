@@ -94,18 +94,14 @@ Proof.
   wp_start as "%Hoverflow".
   wp_auto.
   wp_if_destruct.
-  - iApply "HΦ".
-    iPureIntro.
-    word.
+  - wp_finish.
   - wp_apply "IH".
     { (* [word] doesn't work on its own here. It's helpful to know how to do some of the work it does manually, to help it along. *)
       (* FIXME: word bug? *)
       rewrite -> !word.unsigned_sub_nowrap by word.
       word. }
     iIntros (m Hm).
-    wp_pures.
-    iApply "HΦ".
-    word.
+    wp_finish.
 Qed.
 
 (*| 
@@ -155,7 +151,7 @@ Proof.
   wp_if_destruct.
   - iApply wp_for_post_break.
     wp_auto.
-    iApply "HΦ".
+    wp_finish.
     iPureIntro.
     (* oops, don't know anything about sum *)
 Abort.
@@ -199,7 +195,7 @@ Proof.
   wp_for "HI".
   wp_if_destruct.
   - wp_for_post.
-    iApply "HΦ".
+    wp_finish.
     iPureIntro.
     assert (uint.Z i = (uint.Z n + 1)%Z) by word.
     word.
@@ -368,16 +364,13 @@ Proof.
         wp_apply (wp_load_slice_elem with "[$Hs]") as "Hs".
         { word. }
         { eauto. }
-        iApply "HΦ".
+        wp_finish.
         iFrame.
         iPureIntro.
         intros Heq.
         apply bool_decide_eq_true_1 in Heq. subst.
         auto.
-      * iApply "HΦ".
-        iFrame.
-        iPureIntro.
-        congruence.
+      * wp_finish.
 Qed.
 
 (*| 

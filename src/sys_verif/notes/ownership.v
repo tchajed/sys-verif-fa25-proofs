@@ -93,8 +93,7 @@ Proof.
   wp_start as "l".
   wp_load.
   wp_auto.
-  iApply "HΦ".
-  iFrame.
+  wp_finish.
 Qed.
 
 (*| The code in this example includes a type annotation on the load, with the type `#uint64T`. This type is required since this load is not a core primitive, but instead a function. Composite values like structs are not stored in one heap location, but laid out with one field per location, and `![#s] #l` with a struct type `s` would load the fields individually. However, this specification hides that complexity: as long as the type `uint64T` matches the type of data in the points-to assertin (`w64`), we get the expected specification for loads. |*)
@@ -223,9 +222,8 @@ Lemma wp_ExamplePerson :
     @! heap.ExamplePerson #()
   {{{ RET #(heap.Person.mk "Ada" "Lovelace" (W64 25)); True }}}.
 Proof.
-  wp_start as "_".
-  iApply "HΦ".
-  done.
+  wp_start.
+  wp_finish.
 Qed.
 
 (*| `ExamplePerson` returns a struct value. We write the specification using Person.t, and use `#` to turn it into the GooseLang value that is actually returned (which is a tuple, not the Gallina record). |*)
@@ -253,9 +251,7 @@ Lemma wp_ExamplePersonRef :
 Proof.
   wp_start as "_".
   wp_alloc l as "p".
-  wp_pures.
-  iApply "HΦ".
-  iFrame.
+  wp_finish.
 Qed.
 
 (*| 
@@ -277,9 +273,7 @@ Proof.
   iApply struct_fields_split in "p". iNamed "p".
   cbn [heap.Person.FirstName' heap.Person.LastName' heap.Person.Age'].
   (*| The theorem `struct_fields_split` gives a way to take any points-to assertion with a struct type and split it into its component field points-to assertions, which is what the postcondition of this spec gives. |*)
-  wp_pures.
-  iApply "HΦ".
-  iFrame.
+  wp_finish.
 Qed.
 
 (*| The two concepts of a single points-to for the whole struct and individual field points-to assertions are the main ideas for how Goose handles ownership of struct. We see them used throughout the rest of the examples above: |*)
@@ -296,11 +290,7 @@ Proof.
   iApply struct_fields_split in "p"; iNamed "p"; 
   cbn [heap.Person.FirstName' heap.Person.LastName' heap.Person.Age'].
   wp_auto.
-  iDestruct ("HΦ" with "[]") as "HΦ".
-  { done. }
-  iExactEq "HΦ".
-  f_equal.
-  f_equal.
+  wp_finish.
   rewrite -app_assoc //.
 Qed.
 
@@ -321,8 +311,7 @@ Lemma wp_Person__Older (firstName lastName: byte_string) (age: w64) (p: loc) (de
 Proof.
   wp_start as "(first & last & age)".
   wp_auto.
-  iApply "HΦ".
-  iFrame.
+  wp_finish.
 Qed.
 
 (*| Here is one possible spec for `GetAge`, which results in breaking off the age field into its points-to assertion. Note that this spec allows the caller to retain ownership over the other fields, as opposed to a spec which only gave `age_l ↦ age` in the postcondition. |*)
@@ -341,13 +330,12 @@ Lemma wp_GetAge (firstName lastName: byte_string) (age: w64) (p: loc) (delta: w6
 Proof.
   wp_start as "H". iNamed "H".
   wp_auto.
-  iApply "HΦ".
-  iFrame.
+  wp_finish.
 Qed.
 
 (*| ## Exercises: struct specifications
 
-Fill in a specification for each function, then do the proof. Proofs should mostly be automated (using tactics like `wp_start`, `wp_auto`, `iApply "HΦ"`, and `iFrame`) if you have a correct specification.
+Fill in a specification for each function, then do the proof. Proofs should mostly be automated (using tactics like `wp_start`, `wp_auto`, and `wp_finish`) if you have a correct specification.
 
 You'll need to reference the implementation of these functions and methods in [go/heap/struct.go](https://github.com/tchajed/sys-verif-fa25-proofs/blob/main/go/heap/struct.go).
 
@@ -483,8 +471,8 @@ Proof.
   wp_pure; first word.
   wp_apply (wp_store_slice_elem with "[$Hs]") as "Hs".
   { autorewrite with len. word. }
-  iApply "HΦ".
-  iFrame.
+
+  wp_finish.
 Qed.
 
 (*| Storing into a slice requires only a proof that the index is in-bounds. The postcondition uses `<[sint.nat i := v]> vs` which is a Gallina implementation of updating one index of a list (it's notation for the function `insert` from std++).
