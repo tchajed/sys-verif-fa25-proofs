@@ -573,6 +573,14 @@ Global Instance wp_func_call_ExamplePersonRef :
   WpFuncCall heap.ExamplePersonRef _ (is_pkg_defined heap) :=
   ltac:(solve_wp_func_call).
 
+Global Instance wp_func_call_IsSquare :
+  WpFuncCall heap.IsSquare _ (is_pkg_defined heap) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Rotate :
+  WpFuncCall heap.Rotate _ (is_pkg_defined heap) :=
+  ltac:(solve_wp_func_call).
+
 Global Instance wp_method_call_Stack'ptr_Pop :
   WpMethodCall (ptrT.id heap.Stack.id) "Pop" _ (is_pkg_defined heap) :=
   ltac:(solve_wp_method_call).
@@ -637,20 +645,8 @@ Global Instance wp_method_call_Person'ptr_Older :
   WpMethodCall (ptrT.id heap.Person.id) "Older" _ (is_pkg_defined heap) :=
   ltac:(solve_wp_method_call).
 
-Global Instance wp_method_call_Rect_Area :
-  WpMethodCall heap.Rect.id "Area" _ (is_pkg_defined heap) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Rect_IsSquare :
-  WpMethodCall heap.Rect.id "IsSquare" _ (is_pkg_defined heap) :=
-  ltac:(solve_wp_method_call).
-
 Global Instance wp_method_call_Rect'ptr_Area :
   WpMethodCall (ptrT.id heap.Rect.id) "Area" _ (is_pkg_defined heap) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Rect'ptr_IsSquare :
-  WpMethodCall (ptrT.id heap.Rect.id) "IsSquare" _ (is_pkg_defined heap) :=
   ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_Rect'ptr_MakeSquare :

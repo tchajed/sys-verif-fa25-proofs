@@ -586,15 +586,17 @@ Definition Rect : go_type := structT [
 #[global] Typeclasses Opaque Rect.
 #[global] Opaque Rect.
 
-(* go: struct.go:46:15 *)
+(* go: struct.go:46:16 *)
 Definition Rect__Areaⁱᵐᵖˡ : val :=
   λ: "r" <>,
     exception_do (let: "r" := (mem.alloc "r") in
-    return: ((![#uint64T] (struct.field_ref #Rect #"Width"%go "r")) * (![#uint64T] (struct.field_ref #Rect #"Height"%go "r")))).
+    return: ((![#uint64T] (struct.field_ref #Rect #"Width"%go (![#ptrT] "r"))) * (![#uint64T] (struct.field_ref #Rect #"Height"%go (![#ptrT] "r"))))).
 
-(* go: struct.go:50:15 *)
-Definition Rect__IsSquareⁱᵐᵖˡ : val :=
-  λ: "r" <>,
+Definition IsSquare : go_string := "sys_verif_code/heap.IsSquare"%go.
+
+(* go: struct.go:50:6 *)
+Definition IsSquareⁱᵐᵖˡ : val :=
+  λ: "r",
     exception_do (let: "r" := (mem.alloc "r") in
     return: ((![#uint64T] (struct.field_ref #Rect #"Width"%go "r")) = (![#uint64T] (struct.field_ref #Rect #"Height"%go "r")))).
 
@@ -606,9 +608,21 @@ Definition Rect__MakeSquareⁱᵐᵖˡ : val :=
     do:  ((struct.field_ref #Rect #"Height"%go (![#ptrT] "r")) <-[#uint64T] "$r0");;;
     return: #()).
 
+Definition Rotate : go_string := "sys_verif_code/heap.Rotate"%go.
+
+(* go: struct.go:58:6 *)
+Definition Rotateⁱᵐᵖˡ : val :=
+  λ: "r",
+    exception_do (let: "r" := (mem.alloc "r") in
+    let: "$r0" := (![#uint64T] (struct.field_ref #Rect #"Height"%go (![#ptrT] "r"))) in
+    let: "$r1" := (![#uint64T] (struct.field_ref #Rect #"Width"%go (![#ptrT] "r"))) in
+    do:  ((struct.field_ref #Rect #"Width"%go (![#ptrT] "r")) <-[#uint64T] "$r0");;;
+    do:  ((struct.field_ref #Rect #"Height"%go (![#ptrT] "r")) <-[#uint64T] "$r1");;;
+    return: (![#ptrT] "r")).
+
 Definition vars' : list (go_string * go_type) := [].
 
-Definition functions' : list (go_string * val) := [(BinarySearch, BinarySearchⁱᵐᵖˡ); (ExampleA, ExampleAⁱᵐᵖˡ); (ExampleB, ExampleBⁱᵐᵖˡ); (ExampleC, ExampleCⁱᵐᵖˡ); (ExampleD, ExampleDⁱᵐᵖˡ); (ExampleE, ExampleEⁱᵐᵖˡ); (collatzF, collatzFⁱᵐᵖˡ); (collatzIter, collatzIterⁱᵐᵖˡ); (ExampleG, ExampleGⁱᵐᵖˡ); (Swap, Swapⁱᵐᵖˡ); (IgnoreOne, IgnoreOneⁱᵐᵖˡ); (UseIgnoreOneOwnership, UseIgnoreOneOwnershipⁱᵐᵖˡ); (CopySlice, CopySliceⁱᵐᵖˡ); (StackEscape, StackEscapeⁱᵐᵖˡ); (SliceSwap, SliceSwapⁱᵐᵖˡ); (FindMajority, FindMajorityⁱᵐᵖˡ); (NewStack, NewStackⁱᵐᵖˡ); (NewQueue, NewQueueⁱᵐᵖˡ); (NewSearchTree, NewSearchTreeⁱᵐᵖˡ); (singletonTree, singletonTreeⁱᵐᵖˡ); (ExamplePerson, ExamplePersonⁱᵐᵖˡ); (ExamplePersonRef, ExamplePersonRefⁱᵐᵖˡ)].
+Definition functions' : list (go_string * val) := [(BinarySearch, BinarySearchⁱᵐᵖˡ); (ExampleA, ExampleAⁱᵐᵖˡ); (ExampleB, ExampleBⁱᵐᵖˡ); (ExampleC, ExampleCⁱᵐᵖˡ); (ExampleD, ExampleDⁱᵐᵖˡ); (ExampleE, ExampleEⁱᵐᵖˡ); (collatzF, collatzFⁱᵐᵖˡ); (collatzIter, collatzIterⁱᵐᵖˡ); (ExampleG, ExampleGⁱᵐᵖˡ); (Swap, Swapⁱᵐᵖˡ); (IgnoreOne, IgnoreOneⁱᵐᵖˡ); (UseIgnoreOneOwnership, UseIgnoreOneOwnershipⁱᵐᵖˡ); (CopySlice, CopySliceⁱᵐᵖˡ); (StackEscape, StackEscapeⁱᵐᵖˡ); (SliceSwap, SliceSwapⁱᵐᵖˡ); (FindMajority, FindMajorityⁱᵐᵖˡ); (NewStack, NewStackⁱᵐᵖˡ); (NewQueue, NewQueueⁱᵐᵖˡ); (NewSearchTree, NewSearchTreeⁱᵐᵖˡ); (singletonTree, singletonTreeⁱᵐᵖˡ); (ExamplePerson, ExamplePersonⁱᵐᵖˡ); (ExamplePersonRef, ExamplePersonRefⁱᵐᵖˡ); (IsSquare, IsSquareⁱᵐᵖˡ); (Rotate, Rotateⁱᵐᵖˡ)].
 
 Definition msets' : list (go_string * (list (go_string * val))) := [(S1.id, []); (ptrT.id S1.id, []); (Stack.id, []); (ptrT.id Stack.id, [("Pop"%go, Stack__Popⁱᵐᵖˡ); ("Push"%go, Stack__Pushⁱᵐᵖˡ)]); (Queue.id, [("Pop"%go, Queue__Popⁱᵐᵖˡ); ("Push"%go, Queue__Pushⁱᵐᵖˡ); ("emptyBack"%go, Queue__emptyBackⁱᵐᵖˡ)]); (ptrT.id Queue.id, [("Pop"%go, (λ: "$r",
                  method_call #Queue.id #"Pop"%go (![#Queue] "$r")
@@ -620,11 +634,7 @@ Definition msets' : list (go_string * (list (go_string * val))) := [(S1.id, []);
                  method_call #Person.id #"BuggySetAge"%go (![#Person] "$r")
                  )%V); ("GetAge"%go, Person__GetAgeⁱᵐᵖˡ); ("Name"%go, (λ: "$r",
                  method_call #Person.id #"Name"%go (![#Person] "$r")
-                 )%V); ("Older"%go, Person__Olderⁱᵐᵖˡ)]); (Rect.id, [("Area"%go, Rect__Areaⁱᵐᵖˡ); ("IsSquare"%go, Rect__IsSquareⁱᵐᵖˡ)]); (ptrT.id Rect.id, [("Area"%go, (λ: "$r",
-                 method_call #Rect.id #"Area"%go (![#Rect] "$r")
-                 )%V); ("IsSquare"%go, (λ: "$r",
-                 method_call #Rect.id #"IsSquare"%go (![#Rect] "$r")
-                 )%V); ("MakeSquare"%go, Rect__MakeSquareⁱᵐᵖˡ)])].
+                 )%V); ("Older"%go, Person__Olderⁱᵐᵖˡ)]); (Rect.id, []); (ptrT.id Rect.id, [("Area"%go, Rect__Areaⁱᵐᵖˡ); ("MakeSquare"%go, Rect__MakeSquareⁱᵐᵖˡ)])].
 
 #[global] Instance info' : PkgInfo heap.heap :=
   {|

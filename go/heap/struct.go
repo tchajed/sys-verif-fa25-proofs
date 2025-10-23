@@ -43,14 +43,19 @@ type Rect struct {
 	Height uint64
 }
 
-func (r Rect) Area() uint64 {
+func (r *Rect) Area() uint64 {
 	return r.Width * r.Height
 }
 
-func (r Rect) IsSquare() bool {
+func IsSquare(r Rect) bool {
 	return r.Width == r.Height
 }
 
 func (r *Rect) MakeSquare() {
 	r.Height = r.Width
+}
+
+func Rotate(r *Rect) *Rect {
+	r.Width, r.Height = r.Height, r.Width
+	return r
 }
