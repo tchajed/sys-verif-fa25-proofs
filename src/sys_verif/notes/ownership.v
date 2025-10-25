@@ -378,6 +378,7 @@ Lemma wp_Person__BuggySetAge (p: unit) :
   {{{ RET #(); True }}}.
 Proof.
 Admitted.
+
 (*| ## Slices
 
 Go has a slice type `[]T`, a generic type that works for any element type `T`.
