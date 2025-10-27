@@ -59,6 +59,15 @@ func SumN(n uint64) uint64 {
 	return sum
 }
 
+// SumN2 is a variation on SumN: it uses a different loop and signed integers
+func SumN2(n int) uint64 {
+	sum := uint64(0)
+	for i := 0; i < n; i++ {
+		sum = std.SumAssumeNoOverflow(sum, uint64(i))
+	}
+	return sum
+}
+
 // Fibonacci returns the nth Fibonacci number
 func Fibonacci(n uint64) uint64 {
 	if n == 0 {

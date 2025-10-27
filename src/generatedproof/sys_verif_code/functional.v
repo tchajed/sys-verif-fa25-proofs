@@ -61,6 +61,10 @@ Global Instance wp_func_call_SumN :
   WpFuncCall functional.SumN _ (is_pkg_defined functional) :=
   ltac:(solve_wp_func_call).
 
+Global Instance wp_func_call_SumN2 :
+  WpFuncCall functional.SumN2 _ (is_pkg_defined functional) :=
+  ltac:(solve_wp_func_call).
+
 Global Instance wp_func_call_Fibonacci :
   WpFuncCall functional.Fibonacci _ (is_pkg_defined functional) :=
   ltac:(solve_wp_func_call).

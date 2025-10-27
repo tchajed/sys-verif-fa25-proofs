@@ -116,11 +116,32 @@ Definition SumNⁱᵐᵖˡ : val :=
       do:  ("i" <-[#uint64T] ((![#uint64T] "i") + #(W64 1))));;;
     return: (![#uint64T] "sum")).
 
+Definition SumN2 : go_string := "sys_verif_code/functional.SumN2"%go.
+
+(* SumN2 is a variation on SumN: it uses a different loop and signed integers
+
+   go: functional.go:63:6 *)
+Definition SumN2ⁱᵐᵖˡ : val :=
+  λ: "n",
+    exception_do (let: "n" := (mem.alloc "n") in
+    let: "sum" := (mem.alloc (type.zero_val #uint64T)) in
+    let: "$r0" := #(W64 0) in
+    do:  ("sum" <-[#uint64T] "$r0");;;
+    (let: "i" := (mem.alloc (type.zero_val #intT)) in
+    let: "$r0" := #(W64 0) in
+    do:  ("i" <-[#intT] "$r0");;;
+    (for: (λ: <>, int_lt (![#intT] "i") (![#intT] "n")); (λ: <>, do:  ("i" <-[#intT] ((![#intT] "i") + #(W64 1)))) := λ: <>,
+      let: "$r0" := (let: "$a0" := (![#uint64T] "sum") in
+      let: "$a1" := (s_to_w64 (![#intT] "i")) in
+      (func_call #std.SumAssumeNoOverflow) "$a0" "$a1") in
+      do:  ("sum" <-[#uint64T] "$r0")));;;
+    return: (![#uint64T] "sum")).
+
 Definition Fibonacci : go_string := "sys_verif_code/functional.Fibonacci"%go.
 
 (* Fibonacci returns the nth Fibonacci number
 
-   go: functional.go:63:6 *)
+   go: functional.go:72:6 *)
 Definition Fibonacciⁱᵐᵖˡ : val :=
   λ: "n",
     exception_do (let: "n" := (mem.alloc "n") in
@@ -150,7 +171,7 @@ Definition Factorial : go_string := "sys_verif_code/functional.Factorial"%go.
 
 (* Factorial returns n factorial
 
-   go: functional.go:78:6 *)
+   go: functional.go:87:6 *)
 Definition Factorialⁱᵐᵖˡ : val :=
   λ: "n",
     exception_do (let: "n" := (mem.alloc "n") in
@@ -172,7 +193,7 @@ Definition FastExp : go_string := "sys_verif_code/functional.FastExp"%go.
 
 (* FastExp returns b to the power of n0
 
-   go: functional.go:92:6 *)
+   go: functional.go:101:6 *)
 Definition FastExpⁱᵐᵖˡ : val :=
   λ: "b" "n0",
     exception_do (let: "n0" := (mem.alloc "n0") in
@@ -202,7 +223,7 @@ Definition FastExpⁱᵐᵖˡ : val :=
 
 Definition vars' : list (go_string * go_type) := [].
 
-Definition functions' : list (go_string * val) := [(Add, Addⁱᵐᵖˡ); (Max, Maxⁱᵐᵖˡ); (Midpoint, Midpointⁱᵐᵖˡ); (Midpoint2, Midpoint2ⁱᵐᵖˡ); (Arith, Arithⁱᵐᵖˡ); (SumNrec, SumNrecⁱᵐᵖˡ); (SumN, SumNⁱᵐᵖˡ); (Fibonacci, Fibonacciⁱᵐᵖˡ); (Factorial, Factorialⁱᵐᵖˡ); (FastExp, FastExpⁱᵐᵖˡ)].
+Definition functions' : list (go_string * val) := [(Add, Addⁱᵐᵖˡ); (Max, Maxⁱᵐᵖˡ); (Midpoint, Midpointⁱᵐᵖˡ); (Midpoint2, Midpoint2ⁱᵐᵖˡ); (Arith, Arithⁱᵐᵖˡ); (SumNrec, SumNrecⁱᵐᵖˡ); (SumN, SumNⁱᵐᵖˡ); (SumN2, SumN2ⁱᵐᵖˡ); (Fibonacci, Fibonacciⁱᵐᵖˡ); (Factorial, Factorialⁱᵐᵖˡ); (FastExp, FastExpⁱᵐᵖˡ)].
 
 Definition msets' : list (go_string * (list (go_string * val))) := [].
 
