@@ -454,8 +454,10 @@ Proof.
   pose proof Hj as Hj_bound.
   apply lookup_lt_Some in Hj_bound.
 
+  (*| Most proofs involving slices require you to use this lemma to relate the slice length (the field of the slice value `s`) to the length of the list in the `own_slice` predicate (the assertion `s ↦* xs`) |*)
   iDestruct (own_slice_len with "Hs") as %Hlen.
-  (* slice.elem_ref requires calling [wp_pure] and then proving that the indices are in-bounds, since Go panics even if you just compute these indices *)
+
+  (*| `slice.elem_ref` requires calling `wp_pure` and then proving that the indices are in-bounds, since Go panics even if you just compute these indices |*)
   wp_pure.
   { word. }
   wp_apply (wp_load_slice_elem with "[$Hs]") as "Hs".

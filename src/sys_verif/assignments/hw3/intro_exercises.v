@@ -60,7 +60,7 @@ Lemma ex_rearrange_1 (P Q R: iProp Σ) :
 Proof.
 Admitted.
 
-(*| In this example we use a Coq-level implication. In this case, it comes from a premise in the lemma, but it will often be a previously proven lemma; using such a lemma looks the same as this use of a hypothesis in the lemma. |*)
+(*| In this example we use a Rocq-level implication. In this case, it comes from a premise in the lemma, but it will often be a previously proven lemma; using such a lemma looks the same as this use of a hypothesis in the lemma. |*)
 Lemma example_pure_impl_v1 (P Q R: iProp Σ) :
   (P -∗ Q) →
   P ∗ R -∗ Q ∗ R.

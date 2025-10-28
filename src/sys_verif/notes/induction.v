@@ -154,7 +154,7 @@ follows:
 
 From these two we conclude exactly what we wanted: $\forall n, P(n)$.
 
-This is exactly what we can do with the `induction` tactic. What Coq will do for us is
+This is exactly what we can do with the `induction` tactic. What Rocq will do for us is
 infer the property of `n` we're proving based on the goal.
 |*)
 
@@ -178,7 +178,7 @@ First, let's just recall the rules with toy examples. In these examples, `P`,
 `Q`, `R` will be used as arbitrary "propositions" - for the intuition it's
 sufficient to think of these as boolean-valued facts that can be true or false.
 They would be things like `n = 3` or `n < m`. The reason they aren't booleans in
-Coq is a deep theoretical one we won't worry about.
+Rocq is a deep theoretical one we won't worry about.
 |*)
 
 Lemma or_intro_r (P Q R: Prop) :
@@ -249,7 +249,7 @@ Qed.
 
 (*| This proof uses `intros` and `rewrite`.
 
-Coq allows you to write `intros` without arguments, in which case it will
+Rocq allows you to write `intros` without arguments, in which case it will
 automatically select names. We strongly recommend in this class to always give
 names, since it makes your proof easier to read and modify, as well as making it
 easier to read the context while you're developing a proof. |*)
@@ -269,7 +269,7 @@ Proof.
 Qed.
 
 (*| This lemma is a proof of a disequality, a "not equals". Even this isn't
-built-in to Coq but built from simpler primitives. |*)
+built-in to Rocq but built from simpler primitives. |*)
 Lemma neq_succ_0 n :
   S n <> 0.
 Proof.

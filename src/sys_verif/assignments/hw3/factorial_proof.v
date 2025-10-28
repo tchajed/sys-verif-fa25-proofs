@@ -21,7 +21,7 @@ Context `{hG: !heapGS Σ}.
 Context `{!globalsGS Σ} {go_ctx: GoContext}.
 
 (*| A functional implementation of the factorial function is already provided as
-`fact` by the Coq standard library, which is what we'll use. It looks as you'd expect:
+`fact` by the Rocq standard library, which is what we'll use. It looks as you'd expect:
 
 ```rocq
 Fixpoint fact (n: nat): nat :=

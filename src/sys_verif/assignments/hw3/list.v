@@ -7,7 +7,7 @@ You should start by reading the Go code.
 
 The idea of this proof is similar to what you saw in Assignment 2's exercise 5,
 but with the code written in Go (and thus using nil pointers rather than an
-inductive data type) and with the proof written in Coq (so you have the Iris
+inductive data type) and with the proof written in Rocq (so you have the Iris
 Proof Mode rather than writing a proof outline).
 
 |*)
