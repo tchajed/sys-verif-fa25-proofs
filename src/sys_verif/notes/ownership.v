@@ -6,9 +6,6 @@
 
 1. Translate informal descriptions of ownership to separation logic specifications, and back.
 2. Use the different slice permissions to specify functions.
-3. Read and write specifications with fractional permissions.
-
-Theme for today: ownership in Go, as implemented by Goose
 
 ---
 
@@ -287,7 +284,7 @@ Proof.
 (*| Notice how the following `wp_pures` call transforms `struct.field_ref` into `#(struct.field_ref_f ...)` - this is from a Goose-provided theorem that relates the GooseLang code to a Gallina function. |*)
   wp_alloc p_l as "p". wp_pures.
   (*| The `struct_fields_split` theorem turns a pointer to a struct into pointers for its individual fields. |*)
-  iApply struct_fields_split in "p"; iNamed "p"; 
+  iApply struct_fields_split in "p"; iNamed "p";
   cbn [heap.Person.FirstName' heap.Person.LastName' heap.Person.Age'].
   wp_auto.
   wp_finish.
@@ -428,6 +425,19 @@ Storing is fairly similar:
 |*)
 
 Check wp_store_slice_elem.
+
+(*| 
+All slice operations, including getting an element reference and subslicing, require that all indices be in bounds: when something is out of bounds, the Go code panics, and we model that panic as something unsafe which proofs must prove never occurs (remember that a separation logic triple proves that the code being verified is "safe" if the precondition holds).
+
+In order to prove properties about bounds, we need to reason about the length of a slice. The slice value `(s: slice.t)` has a length field `slice.len_f s`. However, we typically have `s ↦* xs` and would rather reason about the length of the high-level list `xs` rather than explicitly reason about the length field of the slice. These two are related by the `own_slice_len` lemma, so it's typical to use that lemma at the beginning of a proof with something like `iDestruct (own_slice_len with "Hs") as %Hlen`, if `"Hs" : s ↦* xs` is a spatial hypothesis with a slice. Subsequently we will be able to use the `word` tactic to prove something is less than `slice.len_f s`, which will automatically take advantage of this hypothesis.
+
+::: tip Slice lemmas
+
+You should read the proof below to see everything we talk about above in practice, in the context of a real proof.
+
+:::
+
+|*)
 
 (*| This slightly complicated proof illustrates both the load and store specs above as well as how to do the arithmetic reasoning required.
 
