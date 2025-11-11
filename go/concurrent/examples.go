@@ -20,7 +20,7 @@ func FirstGo() {
 
 func FirstLock() uint64 {
 	var x uint64
-	m := new(sync.Mutex)
+	var m sync.Mutex
 	go func() {
 		m.Lock()
 		x = 1

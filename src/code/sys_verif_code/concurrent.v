@@ -255,22 +255,20 @@ Definition FirstLock : go_string := "sys_verif_code/concurrent.FirstLock"%go.
 Definition FirstLockⁱᵐᵖˡ : val :=
   λ: <>,
     exception_do (let: "x" := (mem.alloc (type.zero_val #uint64T)) in
-    let: "m" := (mem.alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (mem.alloc (type.zero_val #sync.Mutex)) in
-    do:  ("m" <-[#ptrT] "$r0");;;
+    let: "m" := (mem.alloc (type.zero_val #sync.Mutex)) in
     let: "$go" := (λ: <>,
-      exception_do (do:  ((method_call #(ptrT.id sync.Mutex.id) #"Lock"%go (![#ptrT] "m")) #());;;
+      exception_do (do:  ((method_call #(ptrT.id sync.Mutex.id) #"Lock"%go "m") #());;;
       let: "$r0" := #(W64 1) in
       do:  ("x" <-[#uint64T] "$r0");;;
-      do:  ((method_call #(ptrT.id sync.Mutex.id) #"Unlock"%go (![#ptrT] "m")) #());;;
+      do:  ((method_call #(ptrT.id sync.Mutex.id) #"Unlock"%go "m") #());;;
       return: #())
       ) in
     do:  (Fork ("$go" #()));;;
-    do:  ((method_call #(ptrT.id sync.Mutex.id) #"Lock"%go (![#ptrT] "m")) #());;;
+    do:  ((method_call #(ptrT.id sync.Mutex.id) #"Lock"%go "m") #());;;
     let: "y" := (mem.alloc (type.zero_val #uint64T)) in
     let: "$r0" := (![#uint64T] "x") in
     do:  ("y" <-[#uint64T] "$r0");;;
-    do:  ((method_call #(ptrT.id sync.Mutex.id) #"Unlock"%go (![#ptrT] "m")) #());;;
+    do:  ((method_call #(ptrT.id sync.Mutex.id) #"Unlock"%go "m") #());;;
     return: (![#uint64T] "y")).
 
 Definition LockedCounter : go_string := "sys_verif_code/concurrent.LockedCounter"%go.

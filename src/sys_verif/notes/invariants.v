@@ -56,7 +56,13 @@ The proof of $\wp(e, \True)$ will in general consume some of the resources avail
 
 The resources $P$ need to be proven right away, unlike if we were verifying $e; e'$, since the scheduler could certainly choose to run $e'$ next (partly or even to completion). The postcondition of $Q$ makes sense for the whole construct because after spawning $e'$ takes over, and it establishes the postcondition $Q$.
 
-Let's see this in action.
+Here's a diagram showing what the transfer of resources looks like in CSL:
+
+<img src="/fig/csl-intuition.png" alt="concurrent separation logic intuition" width="70%" />
+
+The diagram shows the execution of code, with time flowing down. We see a thread spawned, which then proceeds independently. The idea of _separation_ in separation logic now divides the resources (the heap, for now) into two disjoint pieces, $h_1$ and $h_2$, that each thread operates on using its part of $Q_1 \sep Q_2$.
+
+Now let's see this in practice in Perennial.
 
 |*)
 
@@ -68,8 +74,11 @@ Section goose.
 Context `{hG: !heapGS Σ}.
 Context `{!globalsGS Σ} {go_ctx: GoContext}.
 
-Let N := nroot .@ "lock".
-
+(*
+func SetX(x *uint64) {
+	*x = 1
+}
+*)
 Lemma wp_SetX (x_l: loc) (x: w64) :
   {{{ is_pkg_init concurrent ∗ x_l ↦ x }}}
     @! concurrent.SetX #x_l
@@ -82,6 +91,12 @@ Proof.
   iFrame.
 Qed.
 
+(*
+func NoGo() {
+	var x uint64
+	SetX(&x)
+}
+*)
 Lemma wp_NoGo :
   {{{ is_pkg_init concurrent }}}
     @! concurrent.NoGo #()
@@ -95,6 +110,14 @@ Proof.
   iApply "HΦ". done.
 Qed.
 
+(*
+func FirstGo() {
+	var x uint64
+	go func() {
+		SetX(&x)
+	}()
+}
+*)
 Lemma wp_FirstGo :
   {{{ is_pkg_init concurrent }}}
     @! concurrent.FirstGo #()
@@ -105,15 +128,12 @@ Proof.
   (* The actual GooseLang construct for creating threads is called Fork. The
   specification for Fork is equivalent to the wp-spawn above, but is written in
   continuation-passing style. *)
-  wp_bind (Fork _).
-  iApply (wp_fork with "[x]").
-  { iModIntro.
-    wp_pures.
+  wp_apply (wp_fork with "[x]").
+  { wp_pures.
     wp_apply (wp_SetX with "[$x]"). iIntros "x".
     wp_pures.
     done.
   }
-  iModIntro.
   wp_pures.
   iApply "HΦ". done.
 Qed.
@@ -123,12 +143,10 @@ Qed.
 Recall the API for mutexes:
 
 ```go
-new(sync.Mutex) // to create a new lock
+// a zero-valued sync.Mutex is a new lock
 func (m *sync.Mutex) Lock()
 func (m *sync.Mutex) Unlock()
 ```
-
-TODO: update explanation since init_Mutex fupd is now required
 
 We can use mutexes (also commonly called locks) to ensure that critical sections of our code run atomically.
 
@@ -145,13 +163,13 @@ $$
 \ell_m}{\True}
 $$
 
-To initially get $\isLock(\ell_m, R)$, which associates the lock invariant $R$ with the lock $\ell_m$, we have to use the following rule:
+To initially get $\isLock(\ell_m, R)$, which associates the lock invariant $R$ with the lock $\ell_m$, conceptually we use the following rule when the mutex is created:
 
 $$
 \hoareV{R}{\operatorname{newMutex} \, ()}{\fun{v} ∃ \ell_m, v = \ell_m ∗ \isLock(\ell_m, R)}
 $$
 
-When we create a new mutex, we pick the lock invariant $R$ that represents what the mutex protects, and we also have to prove and give up $R$. This is what ensures the lock invariant holds initially.
+When we create a new mutex, we pick the lock invariant $R$ that represents what the mutex protects, and we also have to prove and give up $R$. This is what ensures the lock invariant holds initially. The above rule captures the right intuition, but the real Perennial specification is a bit more sophisticated: it allows allocating memory for a lock and only later picking a lock invariant and creating $\isLock(ell_m, R)$. We'll see the API (`init_Mutex`) in a code example below.
 
 An important aspect of this specification is that $\isLock(\ell_m, R)$ is _persistent_. This is needed since for mutexes to be useful, $\isLock(\ell_m, R)$ has to be available from multiple threads simultaneously. The fact that it is persistent also explains why we don't return it in the Lock and Unlock postconditions. Note that the assertion $\isLock(\ell_m, R)$ can safely be persistent even if $R$ is not persistent because it merely asserts that the lock invariant for the mutex $\ell_m$ is $R$; to actually get a copy of $R$, the thread has to call Lock, and the implementation of mutexes guarantees mutual exclusion at that point.
 
@@ -191,12 +209,22 @@ Proof.
   wp_start as "_".
   wp_alloc_auto; wp_pures.
   wp_alloc_auto; wp_pures.
-  wp_alloc r0_l as "r0". wp_auto.
-  iMod (init_Mutex (∃ (y: w64), x_ptr ↦ y)%I with "r0 [$x]") as "#Hlock".
-  iPersist "m".
-  wp_bind (Fork _).
-  iApply wp_fork.
-  { iModIntro. wp_auto.
+
+(*| Note that the automation has allocated a local variable for the mutex - we have `"m" : m_ptr ↦ default_val Mutex.t`.
+
+To make this a usable lock, we use a _ghost update_ with the `iMod` tactic. The tactic is syntactically similar to `iDestruct`, so you can almost think of the spec for `init_Mutex` as if it were an implication. Let's see that spec before we use it.
+|*)
+
+  Check init_Mutex.
+
+(*| You can read this as if it were `m ↦ default_val Mutex.t -∗ ▷R -∗ is_Mutex m R`. Ignoring the `▷`, what this says is that we can trade an allocated mutex and an initial proof of (any) lock invariant R in order to create a mutex.
+
+This is not far off from what the proof is actually doing - the only difference is that this is not literally an implication. Instead, the proof actually maintains some _ghost state_, and this operations must change that ghost state to create the mutex predicate. That is the reason for the `iMod` call (and not just `iDestruct`).
+|*)
+
+  iMod (init_Mutex (∃ (y: w64), x_ptr ↦ y)%I with "m [$x]") as "#Hlock".
+  wp_apply wp_fork.
+  { wp_auto.
     wp_apply wp_Mutex__Lock.
     { iExact "Hlock". }
     iIntros "[Hlocked Hinv]".
@@ -209,8 +237,6 @@ Proof.
       iModIntro.
       iFrame. }
     done. }
-  iModIntro.
-  wp_auto.
   wp_apply (wp_Mutex__Lock with "[$Hlock]"). iIntros "[Hlocked Hinv]". iNamed "Hinv".
   wp_auto.
   wp_apply (wp_Mutex__Unlock with "[$Hlock $Hlocked $Hinv]").
@@ -225,18 +251,15 @@ Proof.
   wp_start as "_".
   wp_alloc_auto; wp_pures.
   wp_alloc_auto; wp_pures.
-  wp_alloc m_l as "Hm". wp_auto.
   iMod (init_Mutex (∃ (y: w64),
                   "x" :: x_ptr ↦ y ∗
                   "%Hx" :: ⌜uint.Z y = 0 ∨ uint.Z y = 1⌝)%I
-         with "Hm [x]") as "#Hlock".
-  { iModIntro. iFrame.
+         with "m [x]") as "#Hlock".
+  { iFrame.
     iPureIntro. left; auto.
   }
-  iPersist "m".
-  wp_bind (Fork _).
-  iApply wp_fork.
-  { iModIntro. wp_auto.
+  wp_apply wp_fork.
+  { wp_auto.
     wp_apply wp_Mutex__Lock.
     { iExact "Hlock". }
     iIntros "[Hlocked Hinv]".
@@ -249,8 +272,6 @@ Proof.
       iPureIntro. right; word.
     }
     done. }
-  iModIntro.
-  wp_auto.
   wp_apply (wp_Mutex__Lock with "[$Hlock]"). iIntros "[Hlocked Hinv]". iNamed "Hinv".
   wp_auto.
   wp_apply (wp_Mutex__Unlock with "[$Hlock $Hlocked $x]").

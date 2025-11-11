@@ -74,9 +74,9 @@ P, Q: iProp Σ
 R
 ```
 
-As usual, there is a Rocq context above everything. The separation logic part has separation logic hypotheses "HP" and "HQ", and separation logic conclusion R. The fact that "HP" is in the persistent context implies that P is persistent - this means $P ⊢ P ∗ P$. (The full definition is more than that, but we won't go deep enough into how Iris works to talk about it.)
+As usual, there is a Rocq context above everything. The separation logic part has separation logic hypotheses "HP" and "HQ", and separation logic conclusion R. The fact that "HP" is in the persistent context implies that P is persistent - this means $P ⊢ P ∗ P$.
 
-So what propositions are persistent? First, the pure propositions are persistent - but they can be put into the Rocq context, so they aren't so interesting. The first "real" example we'll see is the persistent points-to, `l ↦□ v`.
+So what propositions are persistent? First, the pure propositions are persistent - but they can be put into the Rocq context, so that isn't what makes persistence interesting. The first "real" example we'll see is the persistent points-to, `l ↦□ v`.
 
 |*)
 
@@ -133,9 +133,9 @@ To understand the explanations of persistently it helps to anticipate a little o
 
 First, it is useful to ask whether $□P$ is stronger or weaker than $P$ (in general a modality could be neither, but the modalities in Iris are one or the other). In this case, the answer is that it is _stronger_: $□P ⊢ P$ but not vice versa (in general). Intuitively, it's because $□P$ requires $P$ hold using only "persistent resources".
 
-Second, the persistence modality is monotonic - if $P ⊢ Q$, then $□P ⊢ □Q$. I think in some ways this is a basic sanity test of a modality, but I am not sure about this in general.
+Second, the persistence modality is monotonic - if $P ⊢ Q$, then $□P ⊢ □Q$. This is a very basic sanity test of a modality.
 
-Third, since $□P$ is $P$ using only persistent resources, $□P ⊢ □□P$; both sides don't use resources, and saying it twice makes no difference.
+Third, since $□P$ is $P$ using only persistent resources, $□P ⊢ □□P$; both sides don't use resources, and saying it twice makes no difference. This is common for many other modalities, but it isn't required (the later modality $▷P$ in Iris is not idempotent, for example).
 
 ### Exercise: introduction rule
 
@@ -144,8 +144,8 @@ Prove this derived rule:
 $$
 \dfrac{□P ⊢ Q}{□P ⊢ □Q} \eqnlabel{persistently-intro}
 $$
-
-Fourth, a core feature of persistence is this rule:
+|*)
+(*| Fourth, a core feature of persistence is this rule:
 
 $$
 \dfrac{S ⊢ □P ∧ Q}%
@@ -179,6 +179,7 @@ You should start by quickly reading the code for this example at [go/memoize/mem
 
 As a warmup, we'll verify the "MockMemoize" implementation. This version still has to store and call the function, but there's no memoization happening - when we use `m.Call(x)` it just always calls `f(x)`.
 
+↦
 There is another difference between the two implementations: we use a `*MockMemoize` whereas we'll use `Memoize` - one is always used through a pointer, while the other is used as a value. Both would work in this case, we're just illustrating what this looks like in the proofs.
 
 ---
