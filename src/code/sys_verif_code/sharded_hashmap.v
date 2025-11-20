@@ -8,7 +8,6 @@ Module sharded_hashmap.
 
 Module entry. Definition id : go_string := "sys_verif_code/sharded_hashmap.entry"%go. End entry.
 Module entryShard. Definition id : go_string := "sys_verif_code/sharded_hashmap.entryShard"%go. End entryShard.
-Module shard. Definition id : go_string := "sys_verif_code/sharded_hashmap.shard"%go. End shard.
 Module bucket. Definition id : go_string := "sys_verif_code/sharded_hashmap.bucket"%go. End bucket.
 Module HashMap. Definition id : go_string := "sys_verif_code/sharded_hashmap.HashMap"%go. End HashMap.
 
@@ -108,46 +107,6 @@ Definition entryShard__Storeⁱᵐᵖˡ : val :=
       do:  ((struct.field_ref #entryShard #"entries"%go (![#ptrT] "es")) <-[#sliceT] "$r0"));;;
     return: #()).
 
-Definition shard : go_type := structT [
-  "m" :: mapT uint64T uint64T
-].
-#[global] Typeclasses Opaque shard.
-#[global] Opaque shard.
-
-Definition newShard : go_string := "sys_verif_code/sharded_hashmap.newShard"%go.
-
-(* go: shard.go:17:6 *)
-Definition newShardⁱᵐᵖˡ : val :=
-  λ: <>,
-    exception_do (return: (mem.alloc (let: "$m" := (map.make #uint64T #uint64T) in
-     struct.make #shard [{
-       "m" ::= "$m"
-     }]))).
-
-(* go: shard.go:21:17 *)
-Definition shard__Loadⁱᵐᵖˡ : val :=
-  λ: "s" "key",
-    exception_do (let: "s" := (mem.alloc "s") in
-    let: "key" := (mem.alloc "key") in
-    let: "ok" := (mem.alloc (type.zero_val #boolT)) in
-    let: "v" := (mem.alloc (type.zero_val #uint64T)) in
-    let: ("$ret0", "$ret1") := (map.get (![type.mapT #uint64T #uint64T] (struct.field_ref #shard #"m"%go (![#ptrT] "s"))) (u_to_w64 (![#uint32T] "key"))) in
-    let: "$r0" := "$ret0" in
-    let: "$r1" := "$ret1" in
-    do:  ("v" <-[#uint64T] "$r0");;;
-    do:  ("ok" <-[#boolT] "$r1");;;
-    return: (![#uint64T] "v", ![#boolT] "ok")).
-
-(* go: shard.go:26:17 *)
-Definition shard__Storeⁱᵐᵖˡ : val :=
-  λ: "s" "key" "v",
-    exception_do (let: "s" := (mem.alloc "s") in
-    let: "v" := (mem.alloc "v") in
-    let: "key" := (mem.alloc "key") in
-    let: "$r0" := (![#uint64T] "v") in
-    do:  (map.insert (![type.mapT #uint64T #uint64T] (struct.field_ref #shard #"m"%go (![#ptrT] "s"))) (u_to_w64 (![#uint32T] "key")) "$r0");;;
-    return: #()).
-
 Definition hash : go_string := "sys_verif_code/sharded_hashmap.hash"%go.
 
 (* hash is an arbitrary hash function for uint32
@@ -178,7 +137,7 @@ Definition hashⁱᵐᵖˡ : val :=
 
 Definition bucket : go_type := structT [
   "mu" :: ptrT;
-  "subMap" :: ptrT
+  "subMap" :: mapT uint32T uint64T
 ].
 #[global] Typeclasses Opaque bucket.
 #[global] Opaque bucket.
@@ -195,7 +154,7 @@ Definition newBucket : go_string := "sys_verif_code/sharded_hashmap.newBucket"%g
 Definition newBucketⁱᵐᵖˡ : val :=
   λ: <>,
     exception_do (return: (mem.alloc (let: "$mu" := (mem.alloc (type.zero_val #sync.Mutex)) in
-     let: "$subMap" := ((func_call #newShard) #()) in
+     let: "$subMap" := (map.make #uint32T #uint64T) in
      struct.make #bucket [{
        "mu" ::= "$mu";
        "subMap" ::= "$subMap"
@@ -271,8 +230,7 @@ Definition HashMap__Loadⁱᵐᵖˡ : val :=
     do:  ((method_call #(ptrT.id sync.Mutex.id) #"Lock"%go (![#ptrT] (struct.field_ref #bucket #"mu"%go (![#ptrT] "b")))) #());;;
     let: "ok" := (mem.alloc (type.zero_val #boolT)) in
     let: "x" := (mem.alloc (type.zero_val #uint64T)) in
-    let: ("$ret0", "$ret1") := (let: "$a0" := (![#uint32T] "key") in
-    (method_call #(ptrT.id shard.id) #"Load"%go (![#ptrT] (struct.field_ref #bucket #"subMap"%go (![#ptrT] "b")))) "$a0") in
+    let: ("$ret0", "$ret1") := (map.get (![type.mapT #uint32T #uint64T] (struct.field_ref #bucket #"subMap"%go (![#ptrT] "b"))) (![#uint32T] "key")) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ("x" <-[#uint64T] "$r0");;;
@@ -298,17 +256,16 @@ Definition HashMap__Storeⁱᵐᵖˡ : val :=
     (func_call #bucketIdx) "$a0" "$a1"))) in
     do:  ("b" <-[#ptrT] "$r0");;;
     do:  ((method_call #(ptrT.id sync.Mutex.id) #"Lock"%go (![#ptrT] (struct.field_ref #bucket #"mu"%go (![#ptrT] "b")))) #());;;
-    do:  (let: "$a0" := (![#uint32T] "key") in
-    let: "$a1" := (![#uint64T] "val") in
-    (method_call #(ptrT.id shard.id) #"Store"%go (![#ptrT] (struct.field_ref #bucket #"subMap"%go (![#ptrT] "b")))) "$a0" "$a1");;;
+    let: "$r0" := (![#uint64T] "val") in
+    do:  (map.insert (![type.mapT #uint32T #uint64T] (struct.field_ref #bucket #"subMap"%go (![#ptrT] "b"))) (![#uint32T] "key") "$r0");;;
     do:  ((method_call #(ptrT.id sync.Mutex.id) #"Unlock"%go (![#ptrT] (struct.field_ref #bucket #"mu"%go (![#ptrT] "b")))) #());;;
     return: #()).
 
 Definition vars' : list (go_string * go_type) := [].
 
-Definition functions' : list (go_string * val) := [(newShard, newShardⁱᵐᵖˡ); (hash, hashⁱᵐᵖˡ); (newBucket, newBucketⁱᵐᵖˡ); (createNewBuckets, createNewBucketsⁱᵐᵖˡ); (NewHashMap, NewHashMapⁱᵐᵖˡ); (bucketIdx, bucketIdxⁱᵐᵖˡ)].
+Definition functions' : list (go_string * val) := [(hash, hashⁱᵐᵖˡ); (newBucket, newBucketⁱᵐᵖˡ); (createNewBuckets, createNewBucketsⁱᵐᵖˡ); (NewHashMap, NewHashMapⁱᵐᵖˡ); (bucketIdx, bucketIdxⁱᵐᵖˡ)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [(entry.id, []); (ptrT.id entry.id, []); (entryShard.id, []); (ptrT.id entryShard.id, [("Get"%go, entryShard__Getⁱᵐᵖˡ); ("Store"%go, entryShard__Storeⁱᵐᵖˡ)]); (shard.id, []); (ptrT.id shard.id, [("Load"%go, shard__Loadⁱᵐᵖˡ); ("Store"%go, shard__Storeⁱᵐᵖˡ)]); (bucket.id, []); (ptrT.id bucket.id, []); (HashMap.id, []); (ptrT.id HashMap.id, [("Load"%go, HashMap__Loadⁱᵐᵖˡ); ("Store"%go, HashMap__Storeⁱᵐᵖˡ)])].
+Definition msets' : list (go_string * (list (go_string * val))) := [(entry.id, []); (ptrT.id entry.id, []); (entryShard.id, []); (ptrT.id entryShard.id, [("Get"%go, entryShard__Getⁱᵐᵖˡ); ("Store"%go, entryShard__Storeⁱᵐᵖˡ)]); (bucket.id, []); (ptrT.id bucket.id, []); (HashMap.id, []); (ptrT.id HashMap.id, [("Load"%go, HashMap__Loadⁱᵐᵖˡ); ("Store"%go, HashMap__Storeⁱᵐᵖˡ)])].
 
 #[global] Instance info' : PkgInfo sharded_hashmap.sharded_hashmap :=
   {|

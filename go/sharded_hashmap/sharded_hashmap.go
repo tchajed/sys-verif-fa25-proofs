@@ -28,7 +28,7 @@ func hash(key uint32) uint32 {
 
 type bucket struct {
 	mu     *sync.Mutex
-	subMap *shard
+	subMap map[uint32]uint64
 }
 
 // HashMap implements a map from uint32 to uint64 with expected concurrent
@@ -40,7 +40,7 @@ type HashMap struct {
 func newBucket() *bucket {
 	return &bucket{
 		mu:     new(sync.Mutex),
-		subMap: newShard(),
+		subMap: make(map[uint32]uint64),
 	}
 }
 
@@ -73,7 +73,7 @@ func (hm *HashMap) Load(key uint32) (uint64, bool) {
 	buckets := hm.buckets
 	b := buckets[bucketIdx(key, uint64(len(buckets)))]
 	b.mu.Lock()
-	x, ok := b.subMap.Load(key)
+	x, ok := b.subMap[key]
 	b.mu.Unlock()
 	return x, ok
 }
@@ -83,6 +83,6 @@ func (hm *HashMap) Store(key uint32, val uint64) {
 	buckets := hm.buckets
 	b := buckets[bucketIdx(key, uint64(len(buckets)))]
 	b.mu.Lock()
-	b.subMap.Store(key, val)
+	b.subMap[key] = val
 	b.mu.Unlock()
 }

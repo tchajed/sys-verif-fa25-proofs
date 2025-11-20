@@ -149,72 +149,6 @@ Qed.
 
 End instances.
 
-(* type sharded_hashmap.shard *)
-Module shard.
-Section def.
-Context `{ffi_syntax}.
-Record t := mk {
-  m' : loc;
-}.
-End def.
-End shard.
-
-Section instances.
-Context `{ffi_syntax}.
-#[local] Transparent sharded_hashmap.shard.
-#[local] Typeclasses Transparent sharded_hashmap.shard.
-
-Global Instance shard_wf : struct.Wf sharded_hashmap.shard.
-Proof. apply _. Qed.
-
-Global Instance settable_shard : Settable shard.t :=
-  settable! shard.mk < shard.m' >.
-Global Instance into_val_shard : IntoVal shard.t :=
-  {| to_val_def v :=
-    struct.val_aux sharded_hashmap.shard [
-    "m" ::= #(shard.m' v)
-    ]%struct
-  |}.
-
-Global Program Instance into_val_typed_shard : IntoValTyped shard.t sharded_hashmap.shard :=
-{|
-  default_val := shard.mk (default_val _);
-|}.
-Next Obligation. solve_to_val_type. Qed.
-Next Obligation. solve_zero_val. Qed.
-Next Obligation. solve_to_val_inj. Qed.
-Final Obligation. solve_decision. Qed.
-
-Global Instance into_val_struct_field_shard_m : IntoValStructField "m" sharded_hashmap.shard shard.m'.
-Proof. solve_into_val_struct_field. Qed.
-
-
-Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_shard m':
-  PureWp True
-    (struct.make #sharded_hashmap.shard (alist_val [
-      "m" ::= #m'
-    ]))%struct
-    #(shard.mk m').
-Proof. solve_struct_make_pure_wp. Qed.
-
-
-Global Instance shard_struct_fields_split dq l (v : shard.t) :
-  StructFieldsSplit dq l v (
-    "Hm" ∷ l ↦s[sharded_hashmap.shard :: "m"]{dq} v.(shard.m')
-  ).
-Proof.
-  rewrite /named.
-  apply struct_fields_split_intro.
-  unfold_typed_pointsto; split_pointsto_app.
-
-  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-
-  solve_field_ref_f.
-Qed.
-
-End instances.
-
 (* type sharded_hashmap.bucket *)
 Module bucket.
 Section def.
@@ -379,10 +313,6 @@ Global Program Instance is_pkg_defined_sharded_hashmap : IsPkgDefined sharded_ha
 Final Obligation. iIntros. iFrame "#%". Qed.
 #[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.
 
-Global Instance wp_func_call_newShard :
-  WpFuncCall sharded_hashmap.newShard _ (is_pkg_defined sharded_hashmap) :=
-  ltac:(solve_wp_func_call).
-
 Global Instance wp_func_call_hash :
   WpFuncCall sharded_hashmap.hash _ (is_pkg_defined sharded_hashmap) :=
   ltac:(solve_wp_func_call).
@@ -409,14 +339,6 @@ Global Instance wp_method_call_entryShard'ptr_Get :
 
 Global Instance wp_method_call_entryShard'ptr_Store :
   WpMethodCall (ptrT.id sharded_hashmap.entryShard.id) "Store" _ (is_pkg_defined sharded_hashmap) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_shard'ptr_Load :
-  WpMethodCall (ptrT.id sharded_hashmap.shard.id) "Load" _ (is_pkg_defined sharded_hashmap) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_shard'ptr_Store :
-  WpMethodCall (ptrT.id sharded_hashmap.shard.id) "Store" _ (is_pkg_defined sharded_hashmap) :=
   ltac:(solve_wp_method_call).
 
 Global Instance wp_method_call_HashMap'ptr_Load :

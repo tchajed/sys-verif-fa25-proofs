@@ -13,6 +13,7 @@ From sys_verif.program_proof Require Import prelude empty_ffi.
 From iris.algebra Require Import ofe auth excl gmap.
 From New.proof Require Import sync.
 From New.generatedproof.sys_verif_code Require Import sharded_hashmap.
+From Perennial.algebra Require Import ghost_var.
 
 Open Scope Z_scope.
 Add Printing Coercion Z.of_nat.
@@ -274,6 +275,7 @@ Section proof.
 Context `{hG: !heapGS Σ} `{!globalsGS Σ} {go_ctx: GoContext}.
 Context `{hG1: !auth_map.auth_mapG Σ w32 w64}.
 Context `{hG2: !auth_map.auth_mapG Σ Z (gset w32)}.
+Context `{hG3: !ghost_varG Σ (gmap w32 w64)}.
 
 #[global] Instance : IsPkgInit sharded_hashmap := define_is_pkg_init True%I.
 #[global] Instance : GetIsPkgInitWf sharded_hashmap := build_get_is_pkg_init_wf.
@@ -323,116 +325,6 @@ Qed.
 Typeclasses Opaque hash_f.
 Opaque hash_f.
 
-(*| ------------------------------------------ |*)
-
-(*| ## shard library
-
-This hashmap has a fixed number of buckets, each of which is a _shard_ of the overall map. A shard can have several entries. We use a regular, non-concurrent Go map to store these for convenience, but we still wrap the use of that map in a small "shard" library. Here we prove specs for that library, mostly delegating to the Goose map specs.
-
-We also deal with the fact that Goose only supports maps from `uint64` but we want one from `uint32` here.
-
-|*)
-
-Definition own_shard (s_l: loc) (m: gmap w32 w64) : iProp Σ :=
-  ∃ (m_l: loc) (m64: gmap w64 w64),
-    "%Hvals" :: ⌜(∀ (k: w32) (v: w64),
-                    m !! k = Some v ↔ m64 !! (W64 (uint.Z k)) = Some v)⌝ ∗
-    "m" :: s_l ↦s[sharded_hashmap.shard :: "m"] m_l ∗
-    "Hm" :: own_map m_l (DfracOwn 1) m64.
-
-Lemma wp_newShard :
-  {{{ is_pkg_init sharded_hashmap }}}
-    @! sharded_hashmap.newShard #()
-  {{{ (s_l: loc), RET #s_l; own_shard s_l ∅ }}}.
-Proof.
-  wp_start as "_".
-  wp_apply (wp_map_make (K:=w64) (V:=w64)).
-  { reflexivity. }
-  iIntros (m_l) "Hmap".
-  wp_auto.
-  wp_alloc s_l as "s".
-  iApply struct_fields_split in "s". iNamed "s".
-  iSimpl in "Hm".
-  wp_auto.
-  iApply "HΦ".
-  iFrame.
-  iPureIntro.
-  intros.
-  rewrite !lookup_empty. auto.
-Qed.
-
-Definition map_get `{!IntoVal V} `{!IntoValTyped V t} (v: option V) : V * bool :=
-  (default (default_val V) v, bool_decide (is_Some v)).
-
-Lemma map_get_true V (mv: option V) `{!IntoVal V} `{!IntoValTyped V t} v :
-  map_get mv = (v, true) ->
-  mv = Some v.
-Proof.
-  rewrite /map_get.
-  destruct mv; rewrite /=; congruence.
-Qed.
-
-Lemma map_get_false V (mv: option V) `{!IntoVal V} `{!IntoValTyped V t} v :
-  map_get mv = (v, false) ->
-  mv = None ∧ v = default_val V.
-Proof.
-  rewrite /map_get.
-  destruct mv; rewrite /=.
-  - congruence.
-  - intuition congruence.
-Qed.
-
-(*| **Exercise:** finish up the proofs of `wp_shard__Load` and `wp_shard__Store` _(10 points)_ |*)
-Lemma wp_shard__Load (s_l: loc) (key: w32) (m: gmap w32 w64) :
-  {{{ is_pkg_init sharded_hashmap ∗ own_shard s_l m }}}
-    s_l @ (ptrT.id sharded_hashmap.shard.id) @ "Load" #key
-  {{{ (v: w64) (ok: bool), RET (#v, #ok);
-      own_shard s_l m ∗
-      ⌜(v, ok) = map_get (m !! key)⌝
-  }}}.
-Proof.
-  wp_start as "H". iNamed "H".
-  wp_auto.
-  wp_apply (wp_map_get with "[$Hm]").
-  iIntros "Hm".
-  wp_auto.
-  iApply "HΦ". iFrame.
-  iPureIntro.
-  split.
-  - auto.
-  - rewrite /map_get. simpl.
-    destruct (m !! key) eqn:Hm.
-(* FILL IN HERE *)
-    + admit.
-    + admit.
-Admitted.
-
-Lemma wp_shard__Store (s_l: loc) (key: w32) (val: w64) (m: gmap w32 w64) :
-  {{{ is_pkg_init sharded_hashmap ∗ own_shard s_l m }}}
-    s_l @ (ptrT.id sharded_hashmap.shard.id) @ "Store" #key #val
-  {{{ RET #();
-      own_shard s_l (<[ key := val ]> m)
-  }}}.
-Proof.
-  wp_start as "H". iNamed "H".
-  wp_auto.
-  wp_apply (wp_map_insert with "[$Hm]").
-  iIntros "Hm".
-  wp_auto. iApply "HΦ".
-  rewrite /own_shard.
-  iFrame.
-  iPureIntro.
-  intros.
-  destruct (decide (k = key)); subst.
-  - admit.
-  - rewrite !lookup_insert_ne //.
-    (* this requires some extra work due to limitations in [word] (probably
-    related to 32-bit integers) *)
-    intros H.
-    contradict n.
-    apply (f_equal uint.Z) in H.
-    word.
-Admitted.
 (*| ------------------------------------------ |*)
 
 (*| ## Bucket theory
@@ -487,7 +379,7 @@ Proof.
   set_solver by lia.
 Qed.
 
-(*| **Exercise:** Prove this theorem using the two above. _(5 points)_ |*)
+(*| **Exercise:** Prove this theorem using the two above. _(10 points)_ |*)
 Lemma bucket_map_lookup_Some_iff m max_buckets (i: Z) s :
   bucket_map m max_buckets !! i = Some s →
   s = filter (λ k, hash_bucket k max_buckets = i) m.
@@ -506,16 +398,21 @@ This section develops just a ghost theory for these assertions (no code is invol
 
 |*)
 
-(*| The hashmap predicates will use `γ: ghost_names`, which is actually a record of two names, one for each ghost variable used to define this library.
+(*| The hashmap predicates will use `γ: ghost_names`, which is actually a record of three names, one for each ghost variable used to define this library.
 
+- `user_name` is used for the own_sharded_map that the caller will use.
 - `map_name` is of type `auth_mapR w32 w64`. The authoritative part is the global map contents, while the fragments represent the shards for each bucket.
 - `buckets_name` is of type `auth_mapR Z (gset w32)`. The fragment `{[idx := s]}` asserts that bucket index `idx` holds keys `s` from the global map; these will all have `hash(k) % max_buckets = idx`. The authoritative part tracks the full assignment of keys to buckets, which is calculated by applying `bucket_map` to the global map in `hashmap_auth`.
 
 |*)
 Record ghost_names := mkNames {
+    user_name : gname;
     map_name : gname;
     buckets_name : gname;
   }.
+
+Definition own_sharded_map (γ: ghost_names) (m: gmap w32 w64) :=
+  ghost_var γ.(user_name) (DfracOwn (1/2)) m.
 
 Definition hashmap_auth (γ: ghost_names) (max_buckets: Z) (m: gmap w32 w64) : iProp Σ :=
     "%Hoverflow" :: ⌜0 < max_buckets < 2^32⌝ ∗
@@ -530,16 +427,18 @@ Definition hashmap_sub (γ: ghost_names) (hash_idx: Z) (sub_m: gmap w32 w64) : i
 
 Definition hashmap_pre_auth (γ: ghost_names) (num_buckets: Z): iProp Σ :=
   "%Hpos" :: ⌜0 ≤ num_buckets⌝ ∗
+  "Hm_var" ∷ ghost_var γ.(user_name) (DfracOwn (1/2)) (∅: gmap w32 w64) ∗
   "Hmap_auth" :: auth_map.auth_map_auth (map_name γ) (∅: gmap w32 w64) ∗
   "Hbuckets_auth" :: auth_map.auth_map_auth (buckets_name γ) (bucket_map ∅ num_buckets).
 
 Lemma hashmap_pre_auth_init :
-  ⊢ |==> ∃ γ, hashmap_pre_auth γ 0.
+  ⊢ |==> ∃ γ, hashmap_pre_auth γ 0 ∗ own_sharded_map γ ∅.
 Proof.
+  iMod (ghost_var_alloc (∅ : gmap w32 w64)) as (user_γ) "[Hm_user Hm_var]".
   iMod (auth_map.auth_map_init (K:=w32) (A:=w64)) as (map_γ) "Hmap_auth".
   iMod (auth_map.auth_map_init (K:=Z) (A:=gset w32)) as (bucket_γ) "Hbucket_auth".
   iModIntro.
-  iExists (mkNames map_γ bucket_γ).
+  iExists (mkNames user_γ map_γ bucket_γ).
   iFrame.
   iPureIntro. lia.
 Qed.
@@ -562,7 +461,7 @@ Proof.
           as "[Hbuckets_auth Hbucket_frag]".
   { rewrite dom_list_to_map_L.
     set_solver by lia. }
-  iFrame "Hmap_auth Hmap_frag Hbucket_frag".
+  iFrame "Hm_var Hmap_auth Hmap_frag Hbucket_frag".
   iModIntro.
   iSplit.
   { iPureIntro. lia. }
@@ -585,7 +484,9 @@ Qed.
 
 Lemma hashmap_pre_auth_finish (γ: ghost_names) (num_buckets: Z) :
   0 < num_buckets < 2^32 →
-  hashmap_pre_auth γ num_buckets -∗ hashmap_auth γ num_buckets ∅.
+  hashmap_pre_auth γ num_buckets -∗
+  hashmap_auth γ num_buckets ∅ ∗
+    ghost_var γ.(user_name) (DfracOwn (1 / 2)) (∅: gmap w32 w64).
 Proof.
   intros Hoverflow.
   iIntros "H". iNamed "H".
@@ -630,18 +531,17 @@ Lemma map_get_subset (m sub_m: gmap w32 w64) (numBuckets: Z) (idx: Z) (key: w32)
   dom sub_m =
     filter (λ k : w32, hash_bucket k numBuckets = idx)
       (dom m) →
-  map_get (m !! key) = map_get (sub_m !! key).
+  m !! key = sub_m !! key.
 Proof.
   intros Hbound Hsub Hidx Hsub_m.
-  destruct (map_get (sub_m !! key)) eqn:Hget.
-  destruct b.
+  destruct (sub_m !! key) eqn:Hget.
 Admitted.
 
 (*| This theorem captures the essence of why `Load` is correct. The hard work is all in `map_get_subset`. |*)
 Lemma hashmap_auth_sub_get γ m max_buckets sub_m hash_idx key :
   hash_idx = hash_bucket key max_buckets →
   hashmap_auth γ max_buckets m ∗ hashmap_sub γ hash_idx sub_m -∗
-    ⌜map_get (m !! key) = map_get (sub_m !! key)⌝.
+    ⌜m !! key = sub_m !! key⌝.
 Proof.
   iIntros (Hidx) "[Hauth Hfrag]".
   iDestruct (hashmap_auth_sub_valid with "[$Hauth $Hfrag]") as %Hvalid;
@@ -741,13 +641,13 @@ Admitted.
 
 (*| ## Abstract representation
 
-Finally we get to the abstract representation relation, the predicate `is_hashmap` that connects the state of the code to the logical state of the hashmap. We will use the HOCAP style of specification developed in class, so `is_hashmap` takes a `P: gmap w32 w64 → iProp Σ`.
+Finally we get to the invariants for the atomic specification.
 
 |*)
 
 Definition lock_inv (γ: ghost_names) (hash_idx: Z) (map_l: loc): iProp Σ :=
   ∃ (sub_m: gmap w32 w64),
-    "HsubMap" :: own_shard map_l sub_m ∗
+    "HsubMap" :: map_l ↦$ sub_m ∗
     "Hfrag" :: hashmap_sub γ hash_idx sub_m.
 
 Definition is_bucket (γ: ghost_names) (l: loc) (hash_idx: Z) : iProp Σ :=
@@ -756,13 +656,15 @@ Definition is_bucket (γ: ghost_names) (l: loc) (hash_idx: Z) : iProp Σ :=
   "#mu" :: l ↦s[sharded_hashmap.bucket :: "mu"]□ mu_l ∗
   "#Hlock" :: is_Mutex mu_l (lock_inv γ hash_idx subMap_l).
 
-(*| One of the most interesting parts of this definition is how we use `P`. That's how the proof asserts how the code stores the abstract state of the data structure.
+(*| One of the most interesting parts of this definition is how we manage the ownership of `ghost_var γ.(user_name)`, which holds the logical state of the map as seen by the user. (Remember that `own_sharded_map γ m` is just a half of this ghost variable.)
 
-Since the hashmap isn't protected by one lock but by several, where do we put `P`? It turns out we need a new idea. Instead of a _lock invariant_, we'll use an _invariant_. `inv N P` is an assertion that `P` is an invariant (ignore the namespace `N` for now). An invariant isn't related to a lock; instead, `P` simply needs to hold at all intermediate points of the program, full stop (remember that a lock invariant only holds when the lock is free). Invariants are a key feature of Iris.
+Since the hashmap isn't protected by one lock but by several, where do we put `γ.(user_name)`? We will use an _invariant_ `inv N P`. Remember that once we create this invariant, `P` needs to hold at all intermediate points of the program. There is a dedicated tactic `iInv` for accessing an invariant in a proof, which we can do as a ghost step at any time.
 
 |*)
 
-Definition is_hashmap (γ: ghost_names) (l: loc) (P: gmap w32 w64 → iProp Σ) :=
+Let N := nroot .@ "sharded_hashmap".
+
+Definition is_hashmap (γ: ghost_names) (l: loc) :=
   (∃ (b_s: slice.t) (b_ls: list loc),
   "#buckets" :: l ↦s[sharded_hashmap.HashMap :: "buckets"]□ b_s ∗
   "#Hb_ls" :: own_slice b_s (DfracDiscarded) b_ls ∗
@@ -770,8 +672,8 @@ Definition is_hashmap (γ: ghost_names) (l: loc) (P: gmap w32 w64 → iProp Σ) 
   "His_buckets" :: ([∗ list] i↦bucket_l ∈ b_ls,
     is_bucket γ bucket_l (Z.of_nat i)
   ) ∗
-  "#His_inv" :: inv nroot (∃ (m: gmap w32 w64),
-      "HP" :: P m ∗
+  "#His_inv" :: inv N (∃ (m: gmap w32 w64),
+      "Hm_var" :: ghost_var γ.(user_name) (DfracOwn (1/2)) m ∗
       "Hauth" :: hashmap_auth γ (uint.Z (slice.len_f b_s)) m
   ))%I.
 
@@ -793,7 +695,9 @@ Proof.
   wp_start as "Hfrag".
   wp_alloc m_l as "mu".
   wp_auto.
-  wp_apply wp_newShard. iIntros (s_l) "Hshard".
+  wp_apply wp_map_make.
+  { done. }
+  iIntros (s_l) "Hshard".
   wp_auto.
   wp_alloc b_l as "H". iApply struct_fields_split in "H". iNamed "H".
   iSimpl in "Hmu HsubMap".
@@ -802,7 +706,7 @@ Proof.
          "mu [Hfrag Hshard]") as "Hlock".
   { iModIntro. rewrite /lock_inv.
     iExists (∅). iFrame. }
-  wp_auto. iApply "HΦ". iFrame "#∗".
+  wp_auto. wp_finish. iFrame "#∗".
 Qed.
 
 Lemma wp_createNewBuckets (γ: ghost_names) (newSize: w32) :
@@ -867,7 +771,7 @@ Proof.
     replace (Z.of_nat (length b_ls + 0)) with (uint.Z i) by word.
     iFrame "His_buckets Hbucket".
   }
-  iApply "HΦ".
+  wp_finish.
   iFrame.
   replace (uint.Z i) with (uint.Z newSize) by word.
   iFrame "Hauth".
@@ -881,27 +785,24 @@ Qed.
 You'll need to create the invariant above. Use the theorem `inv_alloc` with the `iMod` tactic:
 
 ```
-  iMod (inv_alloc nroot _ (∃ (m: gmap w32 w64),
-      "HP" :: P m ∗
+  iMod (inv_alloc N _ (∃ (m: gmap w32 w64),
+      "Hm_var" :: ghost_var γ.(user_name) (DfracOwn (1/2)) m ∗
       "Hauth" :: hashmap_auth γ (uint.Z (Slice.sz b_s)) m
   )%I with "[H1 H2 H3]") as "Hinv".
 ```
 
 You'll need to replace `H1 H2 H3` with whatever hypotheses are needed to prove the invariant initially. The invariant needs to match what's in `is_hashmap` so I've given it to you above, it's only a small hint.
 |*)
-Lemma wp_NewHashmap (hm_l: loc) (size: w32) P :
-  {{{ is_pkg_init sharded_hashmap ∗ ⌜0 < uint.Z size⌝ ∗ P ∅ }}}
+Lemma wp_NewHashmap (hm_l: loc) (size: w32) :
+  {{{ is_pkg_init sharded_hashmap ∗ ⌜0 < uint.Z size⌝ }}}
     @! sharded_hashmap.NewHashMap #size
   {{{ (hm_l: loc) (γ: ghost_names), RET #hm_l;
-      is_hashmap γ hm_l P
+      is_hashmap γ hm_l ∗ own_sharded_map γ ∅
   }}}.
 Proof.
-  wp_start as "[%Hpos HP]".
+  wp_start as "%Hpos".
   wp_auto.
-  iMod (auth_map.auth_map_init (K:=w32) (A:=w64)) as (map_γ) "Hmap_auth".
-  iMod (auth_map.auth_map_init (K:=Z) (A:=gset w32)) as (bucket_γ) "Hbucket_auth".
-  (* `set` creates a variable just for the rest of the proof (notice it's in the context including its definition) *)
-  set (γ := mkNames map_γ bucket_γ).
+  iMod (hashmap_pre_auth_init) as (γ) "[Hpre Huser]".
 Admitted.
 
 Lemma wp_bucketIdx (key: w32) (numBuckets: w64) :
@@ -924,25 +825,21 @@ Qed.
 
 Once initialized, our hashmap has just two key operations: `Load` and `Store`.
 
-::: info Timeless assumption
-
-You can ignore `Htimeless`, but if you're curious here's why it's there.
-
-We run into some issues with the later modality due to our setup for the HOCAP specifications and the use of an invariant. These aren't important to the presentation, so we solve them by assuming that the abstract predicate `P` is "timeless". The practical consequence is that after we open the invariant, we would ordinarily get `>I` (where `I` is the proposition for the invariant), but because `P` is timeless we can get `I` instead.
-
-Another solution is to have the update look like `∀ m, ▷ P m -∗ |==> ▷ P m ∗ Q ...` but this is less convenient for the proof.
-
 :::
 
 |*)
-Lemma wp_HashMap__Load (hm_l: loc) γ (key: w32) P Q {Htimeless: ∀ m, Timeless (P m)} :
-  {{{ is_pkg_init sharded_hashmap ∗ is_hashmap γ hm_l P ∗
-      (∀ m, P m -∗ |==> P m ∗ Q (map_get (m !! key)))
-  }}}
-    hm_l @ (ptrT.id sharded_hashmap.HashMap.id) @ "Load" #key
-  {{{ (v: w64) (ok: bool), RET (#v, #ok); Q (v, ok) }}}.
+Lemma wp_HashMap__Load (hm_l: loc) γ (key: w32) :
+  ∀ (Φ: val → iProp Σ),
+  (is_pkg_init sharded_hashmap ∗ is_hashmap γ hm_l ∗
+      |={⊤ ∖ ↑N,∅}=> ∃ (m: gmap w32 w64), own_sharded_map γ m ∗
+          (own_sharded_map γ m ={∅,⊤ ∖ ↑N}=∗
+            Φ (#(default (W64 0) (m !! key)), #(bool_decide (is_Some (m !! key))))%V
+  )) -∗
+    WP hm_l @ (ptrT.id sharded_hashmap.HashMap.id) @ "Load" #key {{ Φ }}.
 Proof.
-  wp_start as "[#Hm Hupd]". iNamed "Hm".
+  iIntros (Φ) "(#? & #Hm & Hau)".
+  wp_method_call. wp_call.
+  iNamed "Hm".
   wp_auto.
   wp_alloc buckets_ptr as "Hbuckets".
   wp_auto.
@@ -966,59 +863,51 @@ Proof.
   iNamed "Hidx".
   wp_auto.
   wp_apply (wp_Mutex__Lock with "[$Hlock]").
-  iIntros "[locked Hlinv]". iNamed "Hlinv".
+  iIntros "[locked Hlock_inv]". iNamed "Hlock_inv".
 
   (* start of critical section *)
   wp_auto.
-  wp_apply (wp_shard__Load with "[$HsubMap]").
-  iIntros (v ok) "[HsubMap %Hget]".
+  wp_apply (wp_map_get with "[$HsubMap]").
+  iIntros "HsubMap".
   wp_auto.
 
-  (* use user's ghost update on abstract state *)
-
-(*| Next comes the most interesting step: we will update the `P m` inside the invariant. To do so, we need to "open" the invariant, similar to acquiring a mutex and getting the associated lock invariant. However, since it's an invariant, we only get to open it, do ghost updates, and then have to immediately close it.
-
-There is one other possibility, which we don't need here: it's allowed to open an invariant, then take _one step_ in the program, and then close it. This is only legal for atomic instructions (which finish in one step); since the invariant needs to hold at every intermediate step, we can't do this for more than one step, unlike locks which can be held as long as the program wants to.
-
-We need to use `iApply fupd_wp` to make `iInv` open at a single point rather than across the next program step. |*)
+  (* use user's atomic update on abstract state *)
+  (* Some boilerplate is needed to make this work, but notice that at the end, we get several hypotheses with the suffix "_inv", which come from "opening" the invariant. The goal has `|={⊤ ∖ ↑N, ⊤}=>`, which represents that the invariant N is unavailable and must be restored to proceed. We'll do that with "Hclose_inv", which requires re-proving the invariant. *)
   iApply fupd_wp.
-  (* the use of `>Hinv` rather than `Hinv` is a technicality related to the ▷
-  modality *)
-  iInv "His_inv" as ">Hinv".
+  iInv "His_inv" as ">HI" "Hclose_inv".
+  iNamedSuffix "HI" "_inv".
 
-  (*| Observe the effect of opening the invariant: we obtain "Hinv" in the context, and the goal now has the form `|={E}=> (▷ I) ∗ (|={⊤}=> WP MutexUnlock ...)`.
+  (* The purpose of opening the invariant is to use the atomic update from the caller, so we do that before closing. *)
+  iMod "Hau" as (m0) "[Hown Hclose_au]".
 
-  Let's break that goal down. First, we can continue doing ghost updates, but `E = ⊤ ∖ ↑nroot` says we can't open any invariants with a name starting with `nroot` (names are hierarchical so this is all of them); this avoids us trying to open the invariant twice in the same step. We choose to give our invariant the root name since this proof doesn't require more than one invariant at any given time.
-
-Next, `I` is now in the goal since to proceed we need to close the invariant by re-proving it.
-
-Finally, we can proceed with the rest of the program proof after doing our work with the invariant, and possibly do more ghost updates. |*)
-  iNamed "Hinv".
-  iMod ("Hupd" with "HP") as "[HP HQ]".
-  iDestruct (hashmap_auth_sub_get with "[$Hauth $Hfrag]") as %Hget'.
+  iDestruct (hashmap_auth_sub_get with "[$Hauth_inv $Hfrag]") as %Hget'.
   { eauto. }
+  iDestruct (ghost_var_agree with "Hm_var_inv Hown") as %<-.
   rewrite Hget'.
-  iFrame "HP Hauth".
-  iModIntro.
+  (* finish firing the AU *)
+  iMod ("Hclose_au" with "Hown") as "HΦ".
+
+  (* Now we are done with the invariant and need several more tactics to close it back up. Since this operation is read-only, the proof of the invariant afterward is just iFrame. *)
+  iMod ("Hclose_inv" with "[Hm_var_inv Hauth_inv]").
+  { iModIntro. iFrame. }
   iModIntro.
 
   wp_apply (wp_Mutex__Unlock with "[$locked $Hlock $Hfrag $HsubMap]").
   iApply "HΦ".
-  rewrite -Hget. iFrame.
 Qed.
 
 (*| **Exercise:** prove `wp_HashMap__Store`. _(10 points)_
 
 The code and proof for `Store` are very similar to that of `Load` so you should be able to figure this out from reading the proof above. |*)
-Lemma wp_HashMap__Store (hm_l: loc) γ (key: w32) (v: w64) P Q {Htimeless: ∀ m, Timeless (P m)} :
-  {{{ is_pkg_init sharded_hashmap ∗ is_hashmap γ hm_l P ∗
-      (∀ m, P m -∗ |==> P (<[key := v]> m) ∗ Q m)
-  }}}
-    hm_l @ (ptrT.id sharded_hashmap.HashMap.id) @ "Store" #key #v
-  {{{ m0, RET #(); Q m0 }}}.
+Lemma wp_HashMap__Store (hm_l: loc) γ (key: w32) (v: w64) :
+  ∀ Φ,
+  (is_pkg_init sharded_hashmap ∗ is_hashmap γ hm_l ∗
+      (|={⊤ ∖ ↑N,∅}=> ∃ m, own_sharded_map γ m ∗
+          (own_sharded_map γ (<[key := v]> m) ={∅,⊤ ∖ ↑N}=∗ Φ #()))) -∗
+    WP hm_l @ (ptrT.id sharded_hashmap.HashMap.id) @ "Store" #key #v {{ Φ }}.
 Proof.
 Admitted.
-(*| After understanding the proof, how would you use it to explain to someone how per-bucket locking works? What changed from your previous explanation? **Exercise:** Write this down in a Rocq comment in your solution. _(10 points)_
+(*| After understanding the proof, how would you use it to explain to someone how per-bucket locking works? What changed from your previous explanation? **Exercise:** Write this down in a Rocq comment in your solution. _(15 points)_
 |*)
 
 End proof.
