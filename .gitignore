@@ -16,3 +16,9 @@ Makefile.coq.conf
 *.mli
 # hw submissions
 *.tar.gz
+
+.build
+__pycache__
+.ninja_deps
+.ninja_log
+.ninja_lock
